@@ -116,6 +116,7 @@
   .kv{display:grid; grid-template-columns:1fr 1fr; gap:11px} @media(max-width:560px){ .kv{grid-template-columns:1fr} .seg{flex-direction:column} }
   .hist-item{background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:13px; margin-bottom:8px; cursor:pointer; transition:.15s} .hist-item:hover{border-color:var(--red)}
   .hist-item .ht{font-weight:700} .hist-item .hm{font-size:11px; color:var(--dim); font-family:"JetBrains Mono"; margin-top:3px}
+  .hist-open{float:right; margin-left:10px; font-size:11px; color:#bcd6ff; background:rgba(91,157,255,.12); border:1px solid rgba(91,157,255,.26); border-radius:999px; padding:3px 9px}
   .pill{font-size:10px; padding:2px 8px; border-radius:999px; margin-left:7px} .pill.saved{background:rgba(52,208,127,.16); color:#8fe9b6} .pill.local{background:rgba(224,177,62,.16); color:var(--gold)}
   .live-panel{margin:16px 0 2px; padding:14px; background:rgba(91,157,255,.06); border:1px solid rgba(91,157,255,.22); border-radius:13px}
   .live-panel .lp-head{display:flex; gap:10px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; margin-bottom:12px}
@@ -285,12 +286,13 @@
       <button class="btn ghost sm" onclick="loadLocalHistory()">端末バックアップを表示</button>
       <button class="btn ghost sm" onclick="exportLocalHistory()">履歴を書き出し</button>
     </div>
+    <div class="status" id="histStatus"></div>
     <div id="histOut"><div class="muted">保存履歴を読み込み中…</div></div>
   </div>
 </div>
 
 <script>
-/* ===== KINJO STAFF v3.0 ===== */
+/* ===== KINJO STAFF v3.1 ===== */
 const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
 const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
 const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
@@ -319,7 +321,7 @@ const bgAssetCache={};
 const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
 const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
 const $=id=>document.getElementById(id);
-const APP_VERSION='v3.0';
+const APP_VERSION='v3.1';
 
 async function init(){
   $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
@@ -587,13 +589,13 @@ function copyCapcutGuide(){ if(!currentScenario) return; const s=currentScenario
 function copy(t,msg){ navigator.clipboard.writeText(t).then(()=>setStatus('genStatus','ok',msg)); }
 async function loadHistory(){ const out=$('histOut'); if(!supabaseClient) return loadLocalHistory();
   try{ const {data,error}=await supabaseClient.from(STAFF_TABLE).select('*').order('created_at',{ascending:false}).limit(50); if(error) throw error; if(!data||!data.length){ loadLocalHistory(); return; } histCache=data;
-    out.innerHTML=`<div class="hint">Supabase保存 ${data.length}件を表示中。端末バックアップも自動保存されています。</div>`+data.map((rec,i)=>{ const n=rec.video_urls?Object.keys(rec.video_urls).length:0; const stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨'; return `<div class="hist-item" onclick="openHist(${i})"><div class="ht">${stl} ${esc(rec.title||rec.theme)}<span class="pill saved">${esc(rec.category||'')}</span></div><div class="hm">${new Date(rec.created_at).toLocaleString()} ／ 動画 ${n}本 ／ id:${rec.id}</div></div>`; }).join('');
+    out.innerHTML=`<div class="hint">Supabase保存 ${data.length}件を表示中。端末バックアップも自動保存されています。</div>`+data.map((rec,i)=>{ const n=rec.video_urls?Object.keys(rec.video_urls).length:0; const stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨'; return `<div class="hist-item" onclick="openHist(${i})"><span class="hist-open">開く</span><div class="ht">${stl} ${esc(rec.title||rec.theme)}<span class="pill saved">${esc(rec.category||'')}</span></div><div class="hm">${new Date(rec.created_at).toLocaleString()} ／ 動画 ${n}本 ／ id:${rec.id}</div></div>`; }).join('');
   }catch(e){ out.innerHTML='<div class="muted">読込エラー。端末バックアップを表示します。</div>'; loadLocalHistory(); } }
 function loadLocalHistory(){ localCache=JSON.parse(localStorage.getItem('kinjo_staff_local')||'[]'); const out=$('histOut'); if(!localCache.length){ out.innerHTML='<div class="muted">端末バックアップはまだありません。</div>'; return; }
-  out.innerHTML=`<div class="hint">端末バックアップ ${localCache.length}件を表示中。新しく作るたび自動でここに残ります。</div>`+localCache.map((rec,i)=>{ const n=rec.video_urls?Object.keys(rec.video_urls).length:0; const stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨'; return `<div class="hist-item" onclick="openHistLocal(${i})"><div class="ht">${stl} ${esc(rec.title||rec.theme)}<span class="pill local">${esc(rec.category||'')}</span></div><div class="hm">${new Date(rec.ts).toLocaleString()} ／ 動画 ${n}本 ／ 端末保存</div></div>`; }).join(''); }
+  out.innerHTML=`<div class="hint">端末バックアップ ${localCache.length}件を表示中。新しく作るたび自動でここに残ります。</div>`+localCache.map((rec,i)=>{ const n=rec.video_urls?Object.keys(rec.video_urls).length:0; const stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨'; return `<div class="hist-item" onclick="openHistLocal(${i})"><span class="hist-open">開く</span><div class="ht">${stl} ${esc(rec.title||rec.theme)}<span class="pill local">${esc(rec.category||'')}</span></div><div class="hm">${new Date(rec.ts).toLocaleString()} ／ 動画 ${n}本 ／ 端末保存</div></div>`; }).join(''); }
 function exportLocalHistory(){ const data=localStorage.getItem('kinjo_staff_local')||'[]'; const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='kinjo-staff-history-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(a.href); }
-function openHist(i){ const r=histCache[i]; if(!r) return; currentScenario=r.scenario; currentRecordId=r.id||null; currentLocalId=null; renderScenario(r.scenario); window.scrollTo({top:0,behavior:'smooth'}); }
-function openHistLocal(i){ const r=localCache[i]; if(!r) return; currentScenario=r.scenario; currentRecordId=null; currentLocalId=r.local_id||null; renderScenario(r.scenario); window.scrollTo({top:0,behavior:'smooth'}); }
+function openHist(i){ const r=histCache[i]; if(!r) return; currentScenario=r.scenario; currentRecordId=r.id||null; currentLocalId=null; renderScenario(r.scenario); setStatus('histStatus','ok','履歴を開きました。シナリオ欄へ移動します。'); $('scCard').scrollIntoView({behavior:'smooth',block:'start'}); }
+function openHistLocal(i){ const r=localCache[i]; if(!r) return; currentScenario=r.scenario; currentRecordId=null; currentLocalId=r.local_id||null; renderScenario(r.scenario); setStatus('histStatus','ok','端末バックアップを開きました。シナリオ欄へ移動します。'); $('scCard').scrollIntoView({behavior:'smooth',block:'start'}); }
 
 /* ===== utils ===== */
 function setStatus(id,cls,msg){ const e=$(id); e.className='status show '+cls; e.textContent=msg; }
