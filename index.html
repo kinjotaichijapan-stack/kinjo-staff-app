@@ -292,7 +292,7 @@
 </div>
 
 <script>
-/* ===== KINJO STAFF v3.1 ===== */
+/* ===== KINJO STAFF v3.2 ===== */
 const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
 const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
 const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
@@ -321,7 +321,7 @@ const bgAssetCache={};
 const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
 const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
 const $=id=>document.getElementById(id);
-const APP_VERSION='v3.1';
+const APP_VERSION='v3.2';
 
 async function init(){
   $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
@@ -533,7 +533,7 @@ async function generateVideos(testOnly){ const token=localStorage.getItem('useap
       sh.video_url=forceHttps(saved||rawUrl); renderVideo(sh); setVStat(sh.shot,'完了 ✓'); await autoSave(); }
     setVideoJob('done','動画完成',100,'動画が完成しました。下にプレビューが表示されています。');
     setStatus('vidStatus','ok','動画生成 完了・保存済み。');
-  }catch(e){ setVideoJob('err','生成エラー',100,(e.message||e)); setStatus('vidStatus','err','エラー: '+(e.message||e)); } finally{ $('vidBtn').disabled=false; $('vidBtn').textContent='🎬 15秒動画を生成'; if(tb) tb.disabled=false; } }
+  }catch(e){ const msg=explainDreaminaError(e); setVideoJob('err','生成エラー',100,msg); setStatus('vidStatus','err','エラー: '+msg); } finally{ $('vidBtn').disabled=false; $('vidBtn').textContent='🎬 15秒動画を生成'; if(tb) tb.disabled=false; } }
 async function generateDreaminaVideo(sh){ const token=localStorage.getItem('useapi_token'), email=localStorage.getItem('dreamina_email');
   const region=localStorage.getItem('dreamina_region')||'CA', model=localStorage.getItem('dreamina_model')||'seedance-2.0-fast'; const account=`${region}:${email}`;
   const style=currentStyle;
@@ -577,6 +577,12 @@ async function saveMediaToCloud(url,bucket,filename,contentType){ try{ const {da
 function forceHttps(u){ return u? u.replace(/^http:\/\//,'https://'):u; }
 function renderVideo(sh){ const el=$('vid-'+sh.shot); if(el&&sh.video_url) el.innerHTML=`<video controls src="${sh.video_url}"></video>`; }
 function setVideoJob(kind,title,pct,detail){ const box=$('videoJob'); if(!box) return; box.className='job '+(kind==='done'?'done':kind==='err'?'err':''); box.classList.remove('hide'); $('videoJobTitle').textContent=title; $('videoJobStep').textContent=Math.round(pct)+'%'; $('videoJobFill').style.width=Math.max(0,Math.min(100,pct))+'%'; $('videoJobDetail').textContent=detail||''; }
+function explainDreaminaError(e){ const raw=String(e&&e.message?e.message:e);
+  if(raw.includes('Submit failed')&&raw.includes('1002')) return 'Dreamina側で作成開始前に拒否されました（ret 1002）。Dreamina公式サイトで同じアカウントにログインし、Seedance 2.0 Fastで短い動画を1回作成して利用規約/初回確認を完了してください。まだ失敗する場合は、APIキー設定のリージョンをUS/CAでアカウント作成時と同じ地域に合わせて、Dreaminaモデルがそのアカウントで実行できるか確認してください。';
+  if(raw.includes('596')) return 'Dreaminaのログインセッションが切れている可能性があります。UseAPI側でDreaminaアカウントを再追加してください。';
+  if(raw.includes('401')||raw.includes('Unauthorized')) return 'UseAPIトークンが違うか期限切れです。KINJOLANDのキー復元、またはAPIキー設定を確認してください。';
+  if(raw.includes('asset upload')) return '参照画像のアップロードに失敗しました。画像を別のJPG/PNGに差し替えてください。';
+  return raw; }
 
 /* ===== copy / history ===== */
 function copyAllPrompts(){ if(!currentScenario) return; const st=currentScenario.style||currentStyle; const txt=currentScenario.shots.map(sh=>`#${sh.shot} [${sh.character} / bg:${sh.bg_type} / ${sh.duration}s]\n`+buildSeedance(sh,st)).join('\n\n'); copy(txt,'全プロンプトをコピーしました'); }
