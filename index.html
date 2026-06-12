@@ -292,7 +292,7 @@
 </div>
 
 <script>
-/* ===== KINJO STAFF v3.3 ===== */
+/* ===== KINJO STAFF v3.4 ===== */
 const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
 const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
 const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
@@ -321,7 +321,7 @@ const bgAssetCache={};
 const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
 const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
 const $=id=>document.getElementById(id);
-const APP_VERSION='v3.3';
+const APP_VERSION='v3.4';
 
 async function init(){
   $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
@@ -531,11 +531,14 @@ async function generateVideos(testOnly){ const token=localStorage.getItem('useap
   $('vidBtn').textContent='生成中… 0%';
   setStatus('vidStatus','work','生成を開始しました。下の進捗バーが動いている間は作成中です。');
   setVideoJob('work','動画生成中',0,'Dreaminaへ送信準備をしています。');
+  let cloudSaved=0;
   try{ for(const sh of shots){ setVStat(sh.shot,'準備中…'); setVideoJob('work','動画生成中',5,'参照画像とプロンプトを準備しています。'); const rawUrl=await generateDreaminaVideo(sh); setVStat(sh.shot,'クラウド保存中…'); setVideoJob('work','保存中',92,'動画が完成しました。クラウドへ保存しています。');
       let saved=null; try{ saved=await saveMediaToCloud(rawUrl,VIDEO_BUCKET,`staff-${Date.now()}-s${sh.shot}.mp4`,'video/mp4'); }catch(e){ console.warn(e); }
+      if(saved) cloudSaved++;
       sh.video_url=forceHttps(saved||rawUrl); currentScenario.video_urls=collectVideoUrls(); renderVideo(sh); setVStat(sh.shot,saved?'完了 ✓ クラウド保存済み':'完了 ✓ 一時URL保存済み'); const ok=await autoSave(); setStatus('vidStatus',ok?'ok':'work',ok?'動画を保存しました。履歴から開けます。':'動画は端末に保存済みです。Supabase保存は失敗したため、履歴を書き出しでバックアップしてください。'); }
-    setVideoJob('done','動画完成',100,'動画が完成しました。下にプレビューが表示されています。');
-    setStatus('vidStatus','ok','動画生成 完了・保存済み。');
+    const allCloud=cloudSaved===shots.length;
+    setVideoJob(allCloud?'done':'err',allCloud?'動画完成・クラウド保存済み':'動画完成・クラウド保存未完了',100,allCloud?'動画ファイルをSupabase Storageへ保存しました。履歴から開けます。':'動画は表示できますが、一時URLの可能性があります。端末バックアップには残っています。');
+    setStatus('vidStatus',allCloud?'ok':'err',allCloud?'動画生成 完了・クラウド保存済み。':'動画生成は完了しましたが、クラウド保存が未完了です。履歴には一時URLとして残っています。');
   }catch(e){ const msg=explainDreaminaError(e); setVideoJob('err','生成エラー',100,msg); setStatus('vidStatus','err','エラー: '+msg); } finally{ $('vidBtn').disabled=false; $('vidBtn').textContent='🎬 15秒動画を生成'; if(tb) tb.disabled=false; } }
 async function generateDreaminaVideo(sh){ const token=localStorage.getItem('useapi_token'), email=localStorage.getItem('dreamina_email');
   const region=localStorage.getItem('dreamina_region')||'CA', model=localStorage.getItem('dreamina_model')||'seedance-2.0-fast'; const account=`${region}:${email}`;
