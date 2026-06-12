@@ -158,9 +158,10 @@
     <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
       <input type="password" id="syncPass" placeholder="暗証番号を入力" autocomplete="off" style="max-width:280px; letter-spacing:3px; text-align:center">
       <button class="btn primary" onclick="restoreKeys()">⬇️ 復元する</button>
+      <button class="btn gold" onclick="saveKeysToCloud()">☁️ クラウド保存</button>
       <span class="muted" id="restoreMsg"></span>
     </div>
-    <div class="hint">※ 手入力したい場合は下の「⚙ APIキー設定」から。</div>
+    <div class="hint">※ この端末のキーを「☁️ クラウド保存」すれば、同じ暗証番号で携帯など別の端末から「⬇️ 復元」して連動できます。手入力は下の「⚙ APIキー設定」から。</div>
   </div>
 
   <details class="set">
@@ -398,8 +399,17 @@ async function connectSupabase(){ try{ supabaseClient=window.supabase.createClie
 /* ===== keys ===== */
 const SECRET_KEYS=['claude_api_key','openai_api_key','image_model','supabase_url','supabase_key','suno_api_key','suno_model','suno_instrumental','useapi_token','dreamina_email','dreamina_region','dreamina_model','dreamina_ratio','dreamina_duration','upload_profile','upload_platforms','auto_post'];
 function _unb64(s){ return Uint8Array.from(atob(s),c=>c.charCodeAt(0)); }
+function _b64(bytes){ let s=''; bytes.forEach(b=>s+=String.fromCharCode(b)); return btoa(s); }
 async function _deriveKey(p,salt){ const b=await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',false,['deriveKey']); return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},b,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }
 async function decryptSecrets(c,p){ const raw=_unb64(c); const k=await _deriveKey(p,raw.slice(0,16)); const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:raw.slice(16,28)},k,raw.slice(28)); return JSON.parse(new TextDecoder().decode(pt)); }
+async function encryptSecrets(obj,p){ const salt=crypto.getRandomValues(new Uint8Array(16)); const iv=crypto.getRandomValues(new Uint8Array(12)); const k=await _deriveKey(p,salt); const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(obj)))); const out=new Uint8Array(28+ct.length); out.set(salt,0); out.set(iv,16); out.set(ct,28); return _b64(out); }
+async function saveKeysToCloud(){ const pass=$('syncPass').value.trim(); if(pass.length<4){ $('restoreMsg').textContent='暗証番号（4桁以上）を入れてください'; return; } if(!supabaseClient){ $('restoreMsg').textContent='Supabase未接続'; return; } $('restoreMsg').textContent='クラウド保存中…';
+  try{ const obj={}; SECRET_KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null&&v!=='') obj[k]=v; });
+    if(!Object.keys(obj).length) throw new Error('保存するキーがありません（先に⚙設定で保存）');
+    const cipher=await encryptSecrets(obj,pass);
+    const {error}=await supabaseClient.from('app_secrets').upsert({id:'default',cipher},{onConflict:'id'}); if(error) throw error;
+    $('restoreMsg').textContent='クラウドに保存しました ✓（同じ暗証番号で携帯から復元できます）';
+  }catch(e){ $('restoreMsg').textContent='保存失敗: '+(e.message||e); } }
 async function restoreKeys(){ const pass=$('syncPass').value.trim(); if(pass.length<4){ $('restoreMsg').textContent='暗証番号を入れてください'; return; } if(!supabaseClient){ $('restoreMsg').textContent='Supabase未接続'; return; } $('restoreMsg').textContent='復元中…';
   try{ const {data,error}=await supabaseClient.from('app_secrets').select('cipher').eq('id','default').single(); if(error||!data||!data.cipher) throw new Error('クラウドに保存が見つかりません');
     const obj=await decryptSecrets(data.cipher,pass); SECRET_KEYS.forEach(k=>{ if(obj[k]!=null&&obj[k]!=='null') localStorage.setItem(k,obj[k]); }); refillFields(); $('restoreMsg').textContent='復元しました ✓（Claude / UseAPI / Dreamina）';
