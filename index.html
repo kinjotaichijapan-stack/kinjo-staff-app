@@ -114,9 +114,19 @@
   details.set summary::-webkit-details-marker{display:none} details.set summary::before{content:"⚙ "; }
   details.set[open] summary{border-radius:12px 12px 0 0}
   .kv{display:grid; grid-template-columns:1fr 1fr; gap:11px} @media(max-width:560px){ .kv{grid-template-columns:1fr} .seg{flex-direction:column} }
-  .hist-item{background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:13px; margin-bottom:8px; cursor:pointer; transition:.15s} .hist-item:hover{border-color:var(--red)}
+  .hist-item{background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:13px; margin-bottom:8px; transition:.15s} .hist-item:hover{border-color:var(--red)}
   .hist-item .ht{font-weight:700} .hist-item .hm{font-size:11px; color:var(--dim); font-family:"JetBrains Mono"; margin-top:3px}
-  .hist-open{float:right; margin-left:10px; font-size:11px; color:#bcd6ff; background:rgba(91,157,255,.12); border:1px solid rgba(91,157,255,.26); border-radius:999px; padding:3px 9px}
+  .hist-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+  .hist-video-box{margin-top:10px; border:1px solid var(--line); border-radius:10px; background:rgba(12,17,24,.55); overflow:hidden}
+  .hist-video-box summary{cursor:pointer; list-style:none; padding:9px 11px; font-size:12px; color:#bcd6ff; font-weight:800}
+  .hist-video-box summary::-webkit-details-marker{display:none}
+  .hist-video-box summary::before{content:"▶ "; color:var(--gold)}
+  .hist-video-box[open] summary::before{content:"▼ "}
+  .hist-videos{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:0 10px 10px}
+  .hist-videos video{width:100%; border-radius:9px; background:#000; display:block}
+  .hist-videos .vurl{font-size:10px; color:var(--dim); word-break:break-all; margin-top:4px; font-family:"JetBrains Mono"}
+  @media(max-width:720px){ .hist-videos{grid-template-columns:1fr} }
+  .hist-open{font-size:11px; color:#bcd6ff; background:rgba(91,157,255,.12); border:1px solid rgba(91,157,255,.26); border-radius:999px; padding:5px 10px}
   .pill{font-size:10px; padding:2px 8px; border-radius:999px; margin-left:7px} .pill.saved{background:rgba(52,208,127,.16); color:#8fe9b6} .pill.local{background:rgba(224,177,62,.16); color:var(--gold)}
   .live-panel{margin:16px 0 2px; padding:14px; background:rgba(91,157,255,.06); border:1px solid rgba(91,157,255,.22); border-radius:13px}
   .live-panel .lp-head{display:flex; gap:10px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; margin-bottom:12px}
@@ -292,7 +302,7 @@
 </div>
 
 <script>
-/* ===== KINJO STAFF v3.4 ===== */
+/* ===== KINJO STAFF v3.5 ===== */
 const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
 const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
 const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
@@ -321,7 +331,7 @@ const bgAssetCache={};
 const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
 const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
 const $=id=>document.getElementById(id);
-const APP_VERSION='v3.4';
+const APP_VERSION='v3.5';
 
 async function init(){
   $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
@@ -605,14 +615,28 @@ function copyCapcutGuide(){ if(!currentScenario) return; const s=currentScenario
 function copy(t,msg){ navigator.clipboard.writeText(t).then(()=>setStatus('genStatus','ok',msg)); }
 async function loadHistory(){ const out=$('histOut'); if(!supabaseClient) return loadLocalHistory();
   try{ const {data,error}=await supabaseClient.from(STAFF_TABLE).select('*').order('created_at',{ascending:false}).limit(50); if(error) throw error; if(!data||!data.length){ loadLocalHistory(); return; } histCache=data;
-    out.innerHTML=`<div class="hint">Supabase保存 ${data.length}件を表示中。端末バックアップも自動保存されています。</div>`+data.map((rec,i)=>{ const n=historyVideoCount(rec); const stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨'; return `<div class="hist-item" onclick="openHist(${i})"><span class="hist-open">開く</span><div class="ht">${stl} ${esc(rec.title||rec.theme)}<span class="pill saved">${esc(rec.category||'')}</span>${n?`<span class="pill saved">動画${n}本</span>`:''}</div><div class="hm">${new Date(rec.created_at).toLocaleString()} ／ 動画 ${n}本 ／ id:${rec.id}</div></div>`; }).join('');
+    out.innerHTML=`<div class="hint">Supabase保存 ${data.length}件を表示中。端末バックアップも自動保存されています。</div>`+data.map((rec,i)=>historyCard(rec,i,'supabase')).join('');
   }catch(e){ out.innerHTML='<div class="muted">読込エラー。端末バックアップを表示します。</div>'; loadLocalHistory(); } }
 function loadLocalHistory(){ localCache=JSON.parse(localStorage.getItem('kinjo_staff_local')||'[]'); const out=$('histOut'); if(!localCache.length){ out.innerHTML='<div class="muted">端末バックアップはまだありません。</div>'; return; }
-  out.innerHTML=`<div class="hint">端末バックアップ ${localCache.length}件を表示中。新しく作るたび自動でここに残ります。</div>`+localCache.map((rec,i)=>{ const n=historyVideoCount(rec); const stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨'; return `<div class="hist-item" onclick="openHistLocal(${i})"><span class="hist-open">開く</span><div class="ht">${stl} ${esc(rec.title||rec.theme)}<span class="pill local">${esc(rec.category||'')}</span>${n?`<span class="pill local">動画${n}本</span>`:''}</div><div class="hm">${new Date(rec.ts).toLocaleString()} ／ 動画 ${n}本 ／ 端末保存</div></div>`; }).join(''); }
+  out.innerHTML=`<div class="hint">端末バックアップ ${localCache.length}件を表示中。新しく作るたび自動でここに残ります。</div>`+localCache.map((rec,i)=>historyCard(rec,i,'local')).join(''); }
 function exportLocalHistory(){ const data=localStorage.getItem('kinjo_staff_local')||'[]'; const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='kinjo-staff-history-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(a.href); }
 function openHist(i){ const r=histCache[i]; if(!r) return; currentScenario=restoreScenarioVideos(r.scenario,r.video_urls); currentRecordId=r.id||null; currentLocalId=null; renderScenario(currentScenario); setStatus('histStatus','ok',`履歴を開きました。動画 ${videoCount(currentScenario)}本を復元しました。`); $('scCard').scrollIntoView({behavior:'smooth',block:'start'}); }
 function openHistLocal(i){ const r=localCache[i]; if(!r) return; currentScenario=restoreScenarioVideos(r.scenario,r.video_urls); currentRecordId=null; currentLocalId=r.local_id||null; renderScenario(currentScenario); setStatus('histStatus','ok',`端末バックアップを開きました。動画 ${videoCount(currentScenario)}本を復元しました。`); $('scCard').scrollIntoView({behavior:'smooth',block:'start'}); }
 function historyVideoCount(rec){ const urls=rec&&rec.video_urls?Object.keys(rec.video_urls).length:0; const shots=rec&&rec.scenario&&rec.scenario.shots?rec.scenario.shots.filter(sh=>!!sh.video_url).length:0; return Math.max(urls,shots); }
+function historyCard(rec,i,kind){ const n=historyVideoCount(rec), saved=kind==='supabase', stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨';
+  const ts=saved?rec.created_at:rec.ts, id=saved?`id:${rec.id}`:'端末保存', openFn=saved?'openHist':'openHistLocal', pill=saved?'saved':'local';
+  return `<div class="hist-item">
+    <div class="ht">${stl} ${esc(rec.title||rec.theme)}<span class="pill ${pill}">${esc(rec.category||'')}</span>${n?`<span class="pill ${pill}">動画${n}本</span>`:''}</div>
+    <div class="hm">${new Date(ts).toLocaleString()} ／ 動画 ${n}本 ／ ${id}</div>
+    <div class="hist-actions"><button class="hist-open" onclick="${openFn}(${i})">シナリオを開く</button></div>
+    ${historyVideosHtml(rec)}
+  </div>`; }
+function historyVideoUrls(rec){ const out=[]; const seen=new Set(); const add=u=>{ if(!u) return; const v=forceHttps(String(u)); if(!seen.has(v)){ seen.add(v); out.push(v); } };
+  const urls=rec&&rec.video_urls?rec.video_urls:{}; Object.keys(urls).sort((a,b)=>Number(a)-Number(b)).forEach(k=>add(urls[k]));
+  if(rec&&rec.scenario&&rec.scenario.shots) rec.scenario.shots.forEach(sh=>add(sh.video_url));
+  return out; }
+function historyVideosHtml(rec){ const urls=historyVideoUrls(rec); if(!urls.length) return '';
+  return `<details class="hist-video-box"><summary>動画を見る</summary><div class="hist-videos">${urls.map((u,i)=>`<div><video controls preload="metadata" src="${escAttr(u)}"></video><div class="vurl">#${i+1} ${esc(u)}</div></div>`).join('')}</div></details>`; }
 
 /* ===== utils ===== */
 function setStatus(id,cls,msg){ const e=$(id); e.className='status show '+cls; e.textContent=msg; }
