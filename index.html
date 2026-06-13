@@ -316,7 +316,7 @@
 </div>
 
 <script>
-/* ===== KINJO STAFF v3.7 ===== */
+/* ===== KINJO STAFF v3.8 ===== */
 const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
 const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
 const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
@@ -345,7 +345,7 @@ const bgAssetCache={};
 const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
 const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
 const $=id=>document.getElementById(id);
-const APP_VERSION='v3.7';
+const APP_VERSION='v3.8';
 
 async function init(){
   $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
@@ -618,6 +618,7 @@ function restoreScenarioVideos(s,urls){ if(!s||!s.shots) return s; const saved=u
 function collectVideoUrlsFrom(s){ const m={}; if(s&&s.shots) s.shots.forEach(sh=>{ if(sh.video_url) m[sh.shot]=sh.video_url; }); return m; }
 function setVideoJob(kind,title,pct,detail){ const box=$('videoJob'); if(!box) return; box.className='job '+(kind==='done'?'done':kind==='err'?'err':''); box.classList.remove('hide'); $('videoJobTitle').textContent=title; $('videoJobStep').textContent=Math.round(pct)+'%'; $('videoJobFill').style.width=Math.max(0,Math.min(100,pct))+'%'; $('videoJobDetail').textContent=detail||''; }
 function explainDreaminaError(e){ const raw=String(e&&e.message?e.message:e);
+  if((raw.includes('1006')&&raw.toLowerCase().includes('credits'))||raw.includes('Not enough credits left')||raw.includes('no relevant benefits')) return 'Dreamina側のクレジット不足、またはこのアカウントでSeedanceを使う権利がありません（ret 1006）。Dreamina/CapCut側でクレジット・プラン・Seedance 2.0 Fastの利用権限を確認してください。急ぐ場合は、APIキー設定でモデルをSeedance 2.0 FastからSeedance 2.0へ変更して再試行してください。';
   if(raw.includes('Submit failed')&&raw.includes('1002')) return 'Dreamina側で作成開始前に拒否されました（ret 1002）。Dreamina公式サイトで同じアカウントにログインし、Seedance 2.0 Fastで短い動画を1回作成して利用規約/初回確認を完了してください。まだ失敗する場合は、APIキー設定のリージョンをUS/CAでアカウント作成時と同じ地域に合わせて、Dreaminaモデルがそのアカウントで実行できるか確認してください。';
   if(raw.includes('596')) return 'Dreaminaのログインセッションが切れている可能性があります。UseAPI側でDreaminaアカウントを再追加してください。';
   if(raw.includes('401')||raw.includes('Unauthorized')) return 'UseAPIトークンが違うか期限切れです。KINJOLANDのキー復元、またはAPIキー設定を確認してください。';
