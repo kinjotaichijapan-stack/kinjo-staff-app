@@ -302,7 +302,7 @@
 </div>
 
 <script>
-/* ===== KINJO STAFF v3.5 ===== */
+/* ===== KINJO STAFF v3.6 ===== */
 const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
 const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
 const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
@@ -331,7 +331,7 @@ const bgAssetCache={};
 const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
 const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
 const $=id=>document.getElementById(id);
-const APP_VERSION='v3.5';
+const APP_VERSION='v3.6';
 
 async function init(){
   $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
@@ -578,11 +578,15 @@ async function generateDreaminaVideo(sh){ const token=localStorage.getItem('usea
   setVStat(sh.shot,'動画リクエスト送信…'); setVideoJob('work','Dreaminaへ送信中',10,'動画生成リクエストを送っています。');
   const createRes=await fetch('https://api.useapi.net/v1/dreamina/videos',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(!createRes.ok) throw new Error('Dreamina create: '+(await createRes.text())); const cd=await createRes.json(); const jobid=cd.jobid; if(!jobid) throw new Error('jobidが返ってきません: '+JSON.stringify(cd).slice(0,200));
-  setVideoJob('work','Dreaminaで生成中',12,`受付完了。ジョブID: ${jobid}`);
-  for(let i=0;i<60;i++){ await sleep(10000); const pct=Math.min(90,12+Math.round(((i+1)/60)*78)); setVStat(sh.shot,`Dreaminaで生成中 ${i+1}/60（約${pct}%）`); setVideoJob('work','Dreaminaで生成中',pct,`まだ作成中です。確認 ${i+1}/60。閉じずに待ってください。`); $('vidBtn').textContent=`生成中… ${pct}%`;
-    try{ const r=await fetch(`https://api.useapi.net/v1/dreamina/videos/${jobid}`,{headers:{'Authorization':'Bearer '+token}}); if(!r.ok) continue; const d=await r.json(); const st=d.status;
-      if(st==='completed'||st==='succeeded'||st==='success'||st==='done'){ const o=d.response||d.result||d; const url=o?.videoUrl||o?.video_url||o?.video?.url||o?.url||o?.videos?.[0]?.url||o?.videos?.[0]?.videoUrl||o?.output?.[0]?.url||o?.output_url||(Array.isArray(o)&&o[0]?.url); if(url) return url; throw new Error('動画URL取得失敗（Console確認）'); }
-      if(st==='failed'||st==='error') throw new Error('生成失敗: '+(d.error||JSON.stringify(d).slice(0,200)));
+  setVideoJob('work','Dreaminaで生成中',12,`受付完了。ジョブID: ${jobid}。ここからはDreamina側の順番待ちです。`);
+  const startedAt=Date.now(), maxChecks=120, waitMs=5000;
+  for(let i=0;i<maxChecks;i++){ await sleep(waitMs); const elapsed=Date.now()-startedAt, pct=Math.min(90,12+Math.round(((i+1)/maxChecks)*78)); const note=videoWaitNote(elapsed);
+    setVStat(sh.shot,`Dreaminaで生成中 ${formatElapsed(elapsed)} / 確認 ${i+1}/${maxChecks}（目安${pct}%）`);
+    setVideoJob('work','Dreaminaで生成中',pct,`${formatElapsed(elapsed)}待機中。${note}`);
+    $('vidBtn').textContent=`生成中… ${pct}%`;
+    try{ const r=await fetch(`https://api.useapi.net/v1/dreamina/videos/${jobid}`,{headers:{'Authorization':'Bearer '+token}}); if(!r.ok) continue; const d=await r.json(); const st=String(d.status||d.state||d.jobStatus||'').toLowerCase();
+      if(['completed','complete','succeeded','success','done','finished'].includes(st)){ const o=d.response||d.result||d; const url=o?.videoUrl||o?.video_url||o?.video?.url||o?.url||o?.videos?.[0]?.url||o?.videos?.[0]?.videoUrl||o?.output?.[0]?.url||o?.output_url||(Array.isArray(o)&&o[0]?.url); if(url) return url; throw new Error('動画URL取得失敗（Console確認）'); }
+      if(['failed','fail','error','canceled','cancelled'].includes(st)) throw new Error('生成失敗: '+(d.error||d.message||JSON.stringify(d).slice(0,200)));
     }catch(e){ console.warn('poll',e); } }
   throw new Error('タイムアウト（10分）'); }
 async function uploadAsset(imageUrl,token,account){ const imgRes=await fetch(imageUrl); if(!imgRes.ok) throw new Error('画像取得失敗: '+imageUrl); const blob=await imgRes.blob(); let ct=blob.type||'image/png';
@@ -591,6 +595,8 @@ async function uploadAsset(imageUrl,token,account){ const imgRes=await fetch(ima
 async function saveMediaToCloud(url,bucket,filename,contentType){ if(!supabaseClient) throw new Error('Supabase未接続のためクラウド保存できません'); try{ const {data,error}=await supabaseClient.functions.invoke('save-media',{body:{url,bucket,filename,contentType}}); if(error) throw error; if(data&&data.error) throw new Error(data.error); if(data&&data.publicUrl) return data.publicUrl; throw new Error('publicUrlなし'); }
   catch(eFn){ let f=url.startsWith('http://')?url.replace('http://','https://'):url; const res=await fetch(f); if(!res.ok) throw new Error('取得失敗 HTTP '+res.status); const blob=await res.blob(); const up=await supabaseClient.storage.from(bucket).upload(filename,blob,{contentType,upsert:true}); if(up.error) throw up.error; return supabaseClient.storage.from(bucket).getPublicUrl(filename).data.publicUrl; } }
 function forceHttps(u){ return u? u.replace(/^http:\/\//,'https://'):u; }
+function formatElapsed(ms){ const s=Math.max(0,Math.floor(ms/1000)); return `${Math.floor(s/60)}分${String(s%60).padStart(2,'0')}秒`; }
+function videoWaitNote(ms){ if(ms<120000) return '通常はこのまま待って大丈夫です。'; if(ms<300000) return '少し混んでいます。15秒動画や実写参照ありの場合は時間が伸びます。'; if(ms<480000) return 'Dreamina側が混雑中です。画面は閉じずに待ってください。'; return 'かなり混雑しています。10分で戻らなければ、短めの内容か別モデルで再生成してください。'; }
 function videoHtml(url){ return `<video controls src="${escAttr(url)}"></video><div class="hint mono">${esc(url)}</div>`; }
 function renderVideo(sh){ const el=$('vid-'+sh.shot); if(el&&sh.video_url) el.innerHTML=videoHtml(sh.video_url); }
 function videoCount(s){ return s&&s.shots?s.shots.filter(sh=>!!sh.video_url).length:0; }
