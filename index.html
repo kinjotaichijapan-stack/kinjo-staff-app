@@ -127,6 +127,12 @@
   .hist-videos .vurl{font-size:10px; color:var(--dim); word-break:break-all; margin-top:4px; font-family:"JetBrains Mono"}
   @media(max-width:720px){ .hist-videos{grid-template-columns:1fr} }
   .hist-open{font-size:11px; color:#bcd6ff; background:rgba(91,157,255,.12); border:1px solid rgba(91,157,255,.26); border-radius:999px; padding:5px 10px}
+  .hist-search{display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; margin-bottom:10px}
+  .hist-search input{padding:10px 12px; font-size:13px}
+  .hist-toggle{display:flex; gap:6px; flex-wrap:wrap}
+  .hist-toggle button{padding:8px 11px; font-size:11.5px}
+  .hist-toggle button.on{background:var(--gold); color:#1a1205; border-color:transparent}
+  @media(max-width:720px){ .hist-search{grid-template-columns:1fr} }
   .pill{font-size:10px; padding:2px 8px; border-radius:999px; margin-left:7px} .pill.saved{background:rgba(52,208,127,.16); color:#8fe9b6} .pill.local{background:rgba(224,177,62,.16); color:var(--gold)}
   .live-panel{margin:16px 0 2px; padding:14px; background:rgba(91,157,255,.06); border:1px solid rgba(91,157,255,.22); border-radius:13px}
   .live-panel .lp-head{display:flex; gap:10px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; margin-bottom:12px}
@@ -290,9 +296,17 @@
 
   <div class="card">
     <div class="h2"><span class="n">H</span> 履歴</div>
-    <div class="muted" style="margin:-4px 0 10px">保存したシナリオと動画URLは履歴に残ります。開くと続きから動画生成・台本コピーができます。</div>
+    <div class="muted" style="margin:-4px 0 10px">保存したシナリオと動画URLはこの下に自動表示されます。タイトル・カテゴリ・内容で検索できます。</div>
+    <div class="hist-search">
+      <input type="text" id="histSearch" placeholder="履歴検索：例 ベッドメイク / ゴミ / 実写 / 動画" oninput="renderHistoryView()">
+      <div class="hist-toggle">
+        <button class="btn ghost sm on" id="histSourceSupabase" onclick="setHistorySource('supabase')">Supabase</button>
+        <button class="btn ghost sm" id="histSourceLocal" onclick="setHistorySource('local')">端末</button>
+      </div>
+      <label class="muted" style="margin:0; display:flex; gap:7px; align-items:center"><input type="checkbox" id="histVideoOnly" onchange="renderHistoryView()">動画ありだけ</label>
+    </div>
     <div class="toolbar" style="margin-bottom:10px">
-      <button class="btn ghost sm" onclick="loadHistory()">Supabaseから読込</button>
+      <button class="btn ghost sm" onclick="loadHistory()">最新に更新</button>
       <button class="btn ghost sm" onclick="loadLocalHistory()">端末バックアップを表示</button>
       <button class="btn ghost sm" onclick="exportLocalHistory()">履歴を書き出し</button>
     </div>
@@ -302,7 +316,7 @@
 </div>
 
 <script>
-/* ===== KINJO STAFF v3.6 ===== */
+/* ===== KINJO STAFF v3.7 ===== */
 const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
 const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
 const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
@@ -326,12 +340,12 @@ const CATEGORIES=Object.keys(THEME_PRESETS);
 
 let supabaseClient=null, characters=[], currentScenario=null, currentRecordId=null, currentLocalId=null;
 let selectedCat='客室清掃', currentMode='auto', currentStyle='anime', selectedChars=[];
-let histCache=[], localCache=[];
+let histCache=[], localCache=[], historySource='supabase';
 const bgAssetCache={};
 const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
 const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
 const $=id=>document.getElementById(id);
-const APP_VERSION='v3.6';
+const APP_VERSION='v3.7';
 
 async function init(){
   $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
@@ -523,7 +537,7 @@ function renderScenario(s){ $('scCard').classList.remove('hide'); $('vidCard').c
 }
 
 /* ===== save ===== */
-async function autoSave(){ const localOk=saveLocal(); const ok=await saveSupabase(); const n=videoCount(currentScenario); $('saveBadge').innerHTML=ok?`<span class="pill saved">Supabase保存済${n?`・動画${n}本`:''}</span>`:`<span class="pill local">端末保存${n?`・動画${n}本`:''}</span>`; if(localOk) loadLocalHistory(); return ok; }
+async function autoSave(){ const localOk=saveLocal(); const ok=await saveSupabase(); const n=videoCount(currentScenario); $('saveBadge').innerHTML=ok?`<span class="pill saved">Supabase保存済${n?`・動画${n}本`:''}</span>`:`<span class="pill local">端末保存${n?`・動画${n}本`:''}</span>`; if(localOk){ refreshLocalCache(); if(historySource==='local') renderHistoryView(); } return ok; }
 function collectVideoUrls(){ const m={}; if(currentScenario) currentScenario.shots.forEach(sh=>{ if(sh.video_url) m[sh.shot]=sh.video_url; }); return m; }
 function saveLocal(){ try{ const arr=JSON.parse(localStorage.getItem('kinjo_staff_local')||'[]'); if(!currentLocalId) currentLocalId='local-'+Date.now(); const urls=collectVideoUrls(); const row={local_id:currentLocalId,ts:Date.now(),category:currentScenario.category,theme:currentScenario.theme,title:currentScenario.title,scenario:currentScenario,video_urls:urls,status:Object.keys(urls).length?'video_saved':'draft'}; const next=[row,...arr.filter(x=>x.local_id!==currentLocalId)].slice(0,100); localStorage.setItem('kinjo_staff_local',JSON.stringify(next)); return true; }catch(e){ console.warn('local save',e); return false; } }
 async function saveSupabase(){ if(!supabaseClient) return false; const urls=collectVideoUrls(); const row={category:currentScenario.category,theme:currentScenario.theme,title:currentScenario.title,scenario:currentScenario,video_urls:urls,status:Object.keys(urls).length?'video_saved':'draft'};
@@ -621,14 +635,29 @@ function copyCapcutGuide(){ if(!currentScenario) return; const s=currentScenario
 function copy(t,msg){ navigator.clipboard.writeText(t).then(()=>setStatus('genStatus','ok',msg)); }
 async function loadHistory(){ const out=$('histOut'); if(!supabaseClient) return loadLocalHistory();
   try{ const {data,error}=await supabaseClient.from(STAFF_TABLE).select('*').order('created_at',{ascending:false}).limit(50); if(error) throw error; if(!data||!data.length){ loadLocalHistory(); return; } histCache=data;
-    out.innerHTML=`<div class="hint">Supabase保存 ${data.length}件を表示中。端末バックアップも自動保存されています。</div>`+data.map((rec,i)=>historyCard(rec,i,'supabase')).join('');
+    historySource='supabase'; updateHistorySourceButtons(); renderHistoryView();
   }catch(e){ out.innerHTML='<div class="muted">読込エラー。端末バックアップを表示します。</div>'; loadLocalHistory(); } }
-function loadLocalHistory(){ localCache=JSON.parse(localStorage.getItem('kinjo_staff_local')||'[]'); const out=$('histOut'); if(!localCache.length){ out.innerHTML='<div class="muted">端末バックアップはまだありません。</div>'; return; }
-  out.innerHTML=`<div class="hint">端末バックアップ ${localCache.length}件を表示中。新しく作るたび自動でここに残ります。</div>`+localCache.map((rec,i)=>historyCard(rec,i,'local')).join(''); }
+function refreshLocalCache(){ try{ localCache=JSON.parse(localStorage.getItem('kinjo_staff_local')||'[]'); }catch(e){ localCache=[]; } }
+function loadLocalHistory(){ refreshLocalCache(); const out=$('histOut'); historySource='local'; updateHistorySourceButtons(); if(!localCache.length){ out.innerHTML='<div class="muted">端末バックアップはまだありません。</div>'; return; }
+  renderHistoryView(); }
 function exportLocalHistory(){ const data=localStorage.getItem('kinjo_staff_local')||'[]'; const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='kinjo-staff-history-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(a.href); }
 function openHist(i){ const r=histCache[i]; if(!r) return; currentScenario=restoreScenarioVideos(r.scenario,r.video_urls); currentRecordId=r.id||null; currentLocalId=null; renderScenario(currentScenario); setStatus('histStatus','ok',`履歴を開きました。動画 ${videoCount(currentScenario)}本を復元しました。`); $('scCard').scrollIntoView({behavior:'smooth',block:'start'}); }
 function openHistLocal(i){ const r=localCache[i]; if(!r) return; currentScenario=restoreScenarioVideos(r.scenario,r.video_urls); currentRecordId=null; currentLocalId=r.local_id||null; renderScenario(currentScenario); setStatus('histStatus','ok',`端末バックアップを開きました。動画 ${videoCount(currentScenario)}本を復元しました。`); $('scCard').scrollIntoView({behavior:'smooth',block:'start'}); }
 function historyVideoCount(rec){ const urls=rec&&rec.video_urls?Object.keys(rec.video_urls).length:0; const shots=rec&&rec.scenario&&rec.scenario.shots?rec.scenario.shots.filter(sh=>!!sh.video_url).length:0; return Math.max(urls,shots); }
+function setHistorySource(src){ historySource=src; updateHistorySourceButtons(); renderHistoryView(); }
+function updateHistorySourceButtons(){ const s=$('histSourceSupabase'), l=$('histSourceLocal'); if(s) s.classList.toggle('on',historySource==='supabase'); if(l) l.classList.toggle('on',historySource==='local'); }
+function renderHistoryView(){ const out=$('histOut'); if(!out) return; const src=historySource==='local'?'local':'supabase', list=src==='local'?localCache:histCache, q=($('histSearch')&&$('histSearch').value||'').trim().toLowerCase(), videoOnly=!!($('histVideoOnly')&&$('histVideoOnly').checked);
+  if(!list.length){ out.innerHTML=src==='local'?'<div class="muted">端末バックアップはまだありません。</div>':'<div class="muted">Supabase履歴はまだありません。</div>'; return; }
+  const rows=list.map((rec,i)=>({rec,i})).filter(x=>(!videoOnly||historyVideoCount(x.rec)>0)&&historyMatches(x.rec,q));
+  const label=src==='local'?'端末バックアップ':'Supabase保存';
+  out.innerHTML=`<div class="hint">${label} ${list.length}件中 ${rows.length}件を表示中。ダウンロードしなくてもここで検索・動画確認できます。</div>`+(rows.length?rows.map(x=>historyCard(x.rec,x.i,src)).join(''):'<div class="muted">条件に合う履歴がありません。</div>');
+}
+function historyMatches(rec,q){ if(!q) return true; const s=rec&&rec.scenario||{}; const parts=[rec.title,rec.theme,rec.category,rec.status,s.title,s.theme,s.category,s.hook,s.kimari_serifu,s.style,historyVideoCount(rec)?'動画 video':''];
+  if(s.steps) s.steps.forEach(st=>parts.push(st.action,st.why,st.narration));
+  if(s.checklist) s.checklist.forEach(x=>parts.push(x));
+  if(s.shots) s.shots.forEach(sh=>parts.push(sh.character,sh.bg_type,sh.scene,sh.voiceover,sh.onscreen_text,sh.video_url));
+  return parts.join(' ').toLowerCase().includes(q);
+}
 function historyCard(rec,i,kind){ const n=historyVideoCount(rec), saved=kind==='supabase', stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨';
   const ts=saved?rec.created_at:rec.ts, id=saved?`id:${rec.id}`:'端末保存', openFn=saved?'openHist':'openHistLocal', pill=saved?'saved':'local';
   return `<div class="hist-item">
