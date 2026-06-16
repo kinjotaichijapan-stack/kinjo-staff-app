@@ -22,7 +22,7 @@
   .wrap{max-width:1060px; margin:0 auto; padding:20px 18px 90px}
   .toplinks{display:flex; gap:10px; flex-wrap:wrap; margin:0 0 18px}
   .tl{flex:1; min-width:170px; text-align:center; text-decoration:none; font-weight:700; font-size:13px; padding:13px 14px; border-radius:12px;
-    background:var(--panel2); border:1px solid var(--line); color:var(--ink); transition:.18s}
+    background:var(--panel2); border:1px solid var(--line); color:var(--ink); transition:.18s; font-family:inherit; cursor:pointer}
   .tl:hover{border-color:var(--line2); transform:translateY(-1px)}
   .tl-red{background:linear-gradient(135deg,var(--red),#c0392b); border-color:transparent; color:#fff; box-shadow:0 8px 22px rgba(239,68,68,.32)}
   .badge{position:fixed; top:12px; right:12px; z-index:50; background:linear-gradient(135deg,var(--red),#c0392b); color:#fff; font-weight:800; font-size:12px;
@@ -157,6 +157,7 @@
 <div class="wrap">
   <div class="toplinks">
     <a class="tl tl-red" href="https://claude.ai/chat/8c9eb88c-b628-43ad-ad91-740b0818a4fc" target="_blank" rel="noopener">🤖 Claudeで修正</a>
+    <button class="tl" onclick="copyClaudeHandoff()">📋 引き継ぎコピー</button>
     <a class="tl" href="https://kinjotaichijapan-stack.github.io/kinjo-staff-app/" target="_blank" rel="noopener">🌐 公開ページ</a>
   </div>
 
@@ -316,7 +317,7 @@
 </div>
 
 <script>
-/* ===== KINJO STAFF v3.8 ===== */
+/* ===== KINJO STAFF v3.9 ===== */
 const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
 const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
 const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
@@ -345,7 +346,7 @@ const bgAssetCache={};
 const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
 const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
 const $=id=>document.getElementById(id);
-const APP_VERSION='v3.8';
+const APP_VERSION='v3.9';
 
 async function init(){
   $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
@@ -430,6 +431,75 @@ async function restoreKeys(){ const pass=$('syncPass').value.trim(); if(pass.len
   }catch(e){ $('restoreMsg').textContent='復元失敗（暗証番号違いかも）: '+(e.message||e); } }
 function refillFields(){ $('claudeKey').value=localStorage.getItem('claude_api_key')||''; $('useapiToken').value=localStorage.getItem('useapi_token')||''; $('dreaminaEmail').value=localStorage.getItem('dreamina_email')||''; $('dreaminaRegion').value=localStorage.getItem('dreamina_region')||'CA'; if(localStorage.getItem('dreamina_model')) $('dreaminaModel').value=localStorage.getItem('dreamina_model'); }
 function saveSettings(){ localStorage.setItem('claude_api_key',$('claudeKey').value.trim()); localStorage.setItem('useapi_token',$('useapiToken').value.trim()); localStorage.setItem('dreamina_email',$('dreaminaEmail').value.trim()); localStorage.setItem('dreamina_region',($('dreaminaRegion').value.trim()||'CA')); localStorage.setItem('dreamina_model',$('dreaminaModel').value); const m=$('setMsg'); m.textContent='保存しました ✓'; setTimeout(()=>m.textContent='',2500); }
+function copyClaudeHandoff(){ const txt=`Claude / Codex 引き継ぎメモ
+
+目的:
+KINJO STAFF は、ホテルスタッフ向けの15秒研修動画を作るWebアプリです。Claudeでシナリオ生成、UseAPI/Dreamina/Seedanceで横動画生成、Supabaseに履歴と動画URLを保存します。
+
+公開URL:
+- Netlify本番: https://staffstaff.netlify.app
+- 予備 GitHub Pages: https://kinjotaichijapan-stack.github.io/kinjo-staff-app/
+- GitHub repo: https://github.com/kinjotaichijapan-stack/kinjo-staff-app
+
+ローカル作業場所:
+/Users/kinjoland/Codex/kinjo_staff_v2_2_deploy
+
+重要ファイル:
+- index.html だけの静的アプリです。基本はこの1ファイルを修正してください。
+- .netlify/ はローカル設定なのでコミットしないでください。
+
+現在の版:
+KINJO STAFF ${APP_VERSION}
+
+主な機能:
+- アニメ版 / 実写版の切替
+- アニメ用キャラ画像登録、実写スタッフ写真登録
+- 清掃/みだしなみ/接客などの研修シナリオ生成
+- Dreamina / Seedance 15秒横動画生成
+- 生成動画URLをSupabaseと端末バックアップへ保存
+- 履歴内で検索、動画ありだけ絞り込み、履歴カード内で動画再生
+- Dreaminaエラー ret 1002 / 1006 などを日本語で案内
+
+Supabase:
+- URL: https://hpxkfpxfduamhouuvcqt.supabase.co
+- table: kinjo_staff_videos
+- video bucket: kinjoland-videos
+- characters table も参照しています
+- APIキーやUseAPIトークンはユーザー端末のlocalStorageまたはapp_secretsから復元。秘密キーはこの引き継ぎ文に書かないこと。
+
+Netlify:
+- site name: staffstaff
+- site id: c9287e5f-d886-42ba-a92f-dd3e7a2355a1
+
+デプロイ手順:
+1. 作業フォルダへ移動
+   cd /Users/kinjoland/Codex/kinjo_staff_v2_2_deploy
+
+2. 構文チェック
+   node -e "const fs=require('fs'); const html=fs.readFileSync('index.html','utf8'); const scripts=[...html.matchAll(/<script>([\\\\s\\\\S]*?)<\\\\/script>/g)].map(m=>m[1]); for (const s of scripts) new Function(s); console.log('ok', scripts.length);"
+
+3. Netlify本番へデプロイ
+   npx netlify deploy --prod --dir=. --site c9287e5f-d886-42ba-a92f-dd3e7a2355a1 --message "Update KINJO STAFF"
+
+4. GitHub Pages予備へ反映
+   git status --short
+   git add index.html
+   git -c user.name='KINJO TAICHI' -c user.email='kinjotaichijapan@gmail.com' commit -m "Update KINJO STAFF"
+   git push
+
+5. 確認
+   curl -L -s -o /tmp/staffstaff.html -w "%{http_code} %{url_effective}\\n" https://staffstaff.netlify.app
+   curl -L -s -o /tmp/kinjo-pages.html -w "%{http_code} %{url_effective}\\n" https://kinjotaichijapan-stack.github.io/kinjo-staff-app/
+
+注意:
+- 生成中の画面をユーザーが開いている時は、ブラウザを勝手にリロードしないでください。Dreaminaのジョブ確認が切れます。
+- ret 1006 はDreamina/CapCutのクレジット不足またはSeedance利用権限不足です。アプリ不具合ではありません。
+- ret 1002 はDreamina側の初回確認/利用規約/リージョン/モデル権限の可能性があります。
+- UIは業務用なので、派手なランディングページではなく、今の作業画面中心で改善してください。
+
+依頼:
+このアプリを引き継いで、ユーザーの要望に沿って index.html を修正し、構文チェック後にNetlifyとGitHub Pagesへ反映してください。`;
+  navigator.clipboard.writeText(txt).then(()=>{ const m=$('restoreMsg'); if(m){ m.textContent='引き継ぎ文をコピーしました ✓'; setTimeout(()=>m.textContent='',3500); } }).catch(()=>alert(txt)); }
 function showSQL(){ const box=$('sqlBox'); box.classList.toggle('hide'); box.innerHTML=`<code class="sql">CREATE TABLE IF NOT EXISTS ${STAFF_TABLE} (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT now(),
   category TEXT, theme TEXT, title TEXT, scenario JSONB, video_urls JSONB, status TEXT DEFAULT 'draft');
