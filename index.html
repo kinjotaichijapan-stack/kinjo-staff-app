@@ -3,753 +3,894 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KINJO STAFF</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<title>KINJOLAND 相棒AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root{ --bg:#0c0f14; --panel:#141a22; --panel2:#1a212b; --panel3:#212a36; --line:#2a3340; --line2:#36414f;
-    --ink:#eef2f6; --mut:#94a1b1; --dim:#5e6b79;
-    --red:#ef4444; --red2:#ff6b6b; --gold:#e0b13e; --ok:#34d07f; --blue:#5b9dff; --r:16px; }
-  *{box-sizing:border-box}
-  body{ margin:0; color:var(--ink); font-family:"Zen Kaku Gothic New",system-ui,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.6;
-    background:
-      radial-gradient(1100px 520px at 88% -8%, rgba(239,68,68,.10), transparent 62%),
-      radial-gradient(900px 500px at -8% 8%, rgba(91,157,255,.07), transparent 60%),
-      radial-gradient(800px 600px at 50% 120%, rgba(224,177,62,.05), transparent 60%),
-      var(--bg); }
-  .mono{font-family:"JetBrains Mono",monospace}
-  .wrap{max-width:1060px; margin:0 auto; padding:20px 18px 90px}
-  .toplinks{display:flex; gap:10px; flex-wrap:wrap; margin:0 0 18px}
-  .tl{flex:1; min-width:170px; text-align:center; text-decoration:none; font-weight:700; font-size:13px; padding:13px 14px; border-radius:12px;
-    background:var(--panel2); border:1px solid var(--line); color:var(--ink); transition:.18s; font-family:inherit; cursor:pointer}
-  .tl:hover{border-color:var(--line2); transform:translateY(-1px)}
-  .tl-red{background:linear-gradient(135deg,var(--red),#c0392b); border-color:transparent; color:#fff; box-shadow:0 8px 22px rgba(239,68,68,.32)}
-  .badge{position:fixed; top:12px; right:12px; z-index:50; background:linear-gradient(135deg,var(--red),#c0392b); color:#fff; font-weight:800; font-size:12px;
-    padding:6px 13px; border-radius:999px; box-shadow:0 8px 22px rgba(239,68,68,.45)}
-  header.hd{display:flex; align-items:center; gap:16px; margin:4px 0 16px}
-  .logo{width:52px;height:52px;border-radius:15px;display:grid;place-items:center; font-weight:900; font-size:22px; color:#fff;
-    background:linear-gradient(135deg,#ff5b5b,#b3261e); box-shadow:0 10px 26px rgba(239,68,68,.4), inset 0 1px 0 rgba(255,255,255,.25)}
-  .hd h1{font-size:22px; margin:0; font-weight:900; letter-spacing:.5px}
-  .hver{display:inline-block; background:linear-gradient(135deg,var(--red),#c0392b); color:#fff; font-family:"JetBrains Mono"; font-size:14px; font-weight:700;
-    padding:2px 12px; border-radius:999px; margin-left:8px; vertical-align:middle; box-shadow:0 4px 14px rgba(239,68,68,.4)}
-  .hd .sub{font-size:12.5px; color:var(--mut); margin-top:3px}
-  .hd .track{margin-left:auto; font-size:11px; color:var(--dim); text-align:right; line-height:1.5; letter-spacing:.5px}
-  .conn{display:flex; align-items:center; gap:9px; font-size:12.5px; margin-bottom:16px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px 14px}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--dim)} .dot.on{background:var(--ok); box-shadow:0 0 10px var(--ok)} .dot.bad{background:var(--red)}
-  .card{background:linear-gradient(180deg,var(--panel),#11161d); border:1px solid var(--line); border-radius:var(--r); padding:20px; margin-bottom:16px; box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
-  .card.accent{border-color:rgba(52,208,127,.35); box-shadow:0 0 0 1px rgba(52,208,127,.06) inset}
-  .h2{font-size:12px; letter-spacing:2.5px; color:var(--mut); margin:0 0 16px; font-weight:800; text-transform:uppercase; display:flex; align-items:center; gap:9px}
-  .h2 .n{color:#fff; width:22px;height:22px;border-radius:7px; display:grid;place-items:center; font-size:11px; font-family:"JetBrains Mono"; background:linear-gradient(135deg,var(--red),#c0392b)}
-  .h2 .n.g{background:linear-gradient(135deg,var(--ok),#1f9e5e)}
-  label{display:block; font-size:12px; color:var(--mut); margin:14px 0 8px; font-weight:600; letter-spacing:.3px}
-  label:first-child{margin-top:0}
-  input[type=text], input[type=password], textarea, select{ width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--ink); border-radius:11px; padding:12px 13px; font-size:14px; font-family:inherit; outline:none; transition:.15s}
-  textarea{resize:vertical; min-height:78px}
-  input:focus, textarea:focus, select:focus{border-color:var(--red); box-shadow:0 0 0 3px rgba(239,68,68,.12)}
-  /* segmented toggle */
-  .seg{display:flex; gap:6px; background:var(--panel2); border:1px solid var(--line); border-radius:13px; padding:6px}
-  .seg .opt{flex:1; text-align:center; cursor:pointer; padding:12px 8px; border-radius:9px; transition:.16s; color:var(--mut)}
-  .seg .opt .big{font-size:15px; font-weight:800; color:var(--ink)} .seg .opt .small{font-size:11px; margin-top:1px}
-  .seg .opt:hover{background:var(--panel3)}
-  .seg .opt.on{background:linear-gradient(135deg,var(--red),#c0392b); color:#fff; box-shadow:0 6px 16px rgba(239,68,68,.3)}
-  .seg .opt.on .big, .seg .opt.on .small{color:#fff}
-  .seg.blue .opt.on{background:linear-gradient(135deg,var(--blue),#3a78d6); box-shadow:0 6px 16px rgba(91,157,255,.3)}
-  .asset-count{display:inline-block; margin-left:7px; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.08); color:var(--gold); font-family:"JetBrains Mono"; font-size:10px; font-weight:800}
-  .seg .opt.on .asset-count{background:rgba(255,255,255,.18); color:#fff}
-  .chips{display:flex; gap:9px; flex-wrap:wrap}
-  .chip{background:var(--panel2); border:1px solid var(--line); color:var(--mut); padding:8px 14px; border-radius:999px; font-size:13px; cursor:pointer; transition:.15s}
-  .chip:hover{border-color:var(--line2); color:var(--ink)}
-  .chip.on{background:var(--red); border-color:transparent; color:#fff; font-weight:700; box-shadow:0 4px 12px rgba(239,68,68,.3)}
-  .chip.cat{border-color:var(--gold); color:var(--gold)} .chip.cat.on{background:var(--gold); border-color:transparent; color:#1a1205}
-  .chip.char.on{background:var(--blue); border-color:transparent; color:#fff; box-shadow:0 4px 12px rgba(91,157,255,.3)}
-  .btn{cursor:pointer; border:none; border-radius:12px; padding:13px 20px; font-size:14px; font-weight:800; font-family:inherit; transition:.16s; letter-spacing:.4px}
-  .btn.primary{background:linear-gradient(135deg,var(--red),#c0392b); color:#fff; box-shadow:0 8px 20px rgba(239,68,68,.3)}
-  .btn.primary:hover{transform:translateY(-1px); box-shadow:0 11px 26px rgba(239,68,68,.42)}
-  .btn.ghost{background:var(--panel2); color:var(--ink); border:1px solid var(--line)} .btn.ghost:hover{border-color:var(--line2)}
-  .btn.gold{background:linear-gradient(135deg,var(--gold),#bf922f); color:#1a1205}
-  .btn:disabled{opacity:.45; cursor:not-allowed; transform:none} .btn.sm{padding:9px 14px; font-size:12.5px; border-radius:10px}
-  .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center} .spacer{flex:1}
-  .muted{color:var(--mut); font-size:12.5px} .hint{font-size:11.5px; color:var(--dim); margin-top:8px}
-  .status{font-size:12.5px; padding:10px 13px; border-radius:10px; margin-top:12px; display:none} .status.show{display:block}
-  .status.work{background:rgba(91,157,255,.12); color:#bcd6ff; border:1px solid rgba(91,157,255,.3)}
-  .status.ok{background:rgba(52,208,127,.12); color:#8fe9b6; border:1px solid rgba(52,208,127,.3)}
-  .status.err{background:rgba(239,68,68,.12); color:#ffb0b0; border:1px solid rgba(239,68,68,.3)}
-  .job{margin-top:14px; padding:15px; border-radius:13px; background:linear-gradient(180deg,rgba(91,157,255,.15),rgba(91,157,255,.06)); border:1px solid rgba(91,157,255,.34)}
-  .job.done{background:linear-gradient(180deg,rgba(52,208,127,.16),rgba(52,208,127,.06)); border-color:rgba(52,208,127,.34)}
-  .job.err{background:linear-gradient(180deg,rgba(239,68,68,.16),rgba(239,68,68,.06)); border-color:rgba(239,68,68,.34)}
-  .job-head{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:10px}
-  .job-title{font-size:17px; font-weight:900}
-  .job-step{font-family:"JetBrains Mono"; font-size:12px; color:#bcd6ff}
-  .job-bar{height:12px; border-radius:999px; overflow:hidden; background:#080b10; border:1px solid var(--line); margin:10px 0}
-  .job-fill{height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg,var(--blue),var(--ok)); transition:width .3s ease}
-  .job-detail{font-size:13px; color:var(--ink)}
-  .job-note{font-size:11.5px; color:var(--mut); margin-top:6px}
-  .sc-title{font-size:23px; font-weight:900; margin:2px 0 6px}
-  .sc-meta{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
-  .sc-tag{font-size:11px; padding:4px 11px; border-radius:999px; background:var(--panel2); border:1px solid var(--line); color:var(--gold)}
-  .block{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:15px; margin-bottom:12px}
-  .block .lab{font-size:11px; letter-spacing:1.5px; color:var(--dim); text-transform:uppercase; margin-bottom:9px; font-weight:800}
-  .step{display:flex; gap:13px; padding:11px 0; border-bottom:1px solid var(--line)} .step:last-child{border-bottom:none}
-  .step .num{flex:none; width:27px;height:27px;border-radius:9px;background:linear-gradient(135deg,var(--red),#c0392b);color:#fff; display:grid;place-items:center;font-weight:700;font-family:"JetBrains Mono";font-size:13px}
-  .step .body .act{font-weight:700} .step .body .why{font-size:13px; color:var(--gold); margin-top:3px}
-  .step .body .why::before{content:"なぜ ▸ "; color:var(--dim); font-weight:700}
-  .step .body .nar{font-size:12px; color:var(--mut); margin-top:6px; padding:8px 11px; background:var(--panel); border-radius:8px}
-  .step .body .nar::before{content:"🎙 "; }
-  .checklist{list-style:none; padding:0; margin:0}
-  .checklist li{padding:8px 0 8px 28px; position:relative; border-bottom:1px dashed var(--line); font-size:14px} .checklist li:last-child{border-bottom:none}
-  .checklist li::before{content:"☐"; position:absolute; left:0; color:var(--ok); font-size:16px}
-  .serifu{text-align:center; font-size:18px; font-weight:900; color:var(--red2); padding:12px; border:2px dashed rgba(239,68,68,.6); border-radius:12px; margin-top:6px; background:rgba(239,68,68,.04)}
-  .shot{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:13px; margin-bottom:10px}
-  .shot .head{display:flex; gap:8px; align-items:center; margin-bottom:9px; flex-wrap:wrap}
-  .tag{font-size:11px; padding:3px 9px; border-radius:7px; font-family:"JetBrains Mono"; font-weight:700}
-  .tag.char{background:rgba(91,157,255,.16); color:#bcd6ff} .tag.bg{background:rgba(224,177,62,.16); color:var(--gold)} .tag.dur{background:rgba(52,208,127,.16); color:#8fe9b6}
-  .shot .prompt{font-size:11.5px; color:var(--mut); font-family:"JetBrains Mono"; line-height:1.55; background:var(--panel); border-radius:8px; padding:11px; white-space:pre-wrap; max-height:140px; overflow:auto}
-  .shot .ost{font-size:12px; color:var(--ink); margin-top:7px} .shot .ost::before{content:"テロップ ▸ "; color:var(--dim); font-weight:700; font-size:10px}
-  .shot .vo{font-size:12.5px; color:#8fe9b6; margin-top:7px; padding:8px 11px; background:rgba(52,208,127,.08); border:1px solid rgba(52,208,127,.25); border-radius:8px} .shot .vo::before{content:"🎙 ナレーション ▸ "; color:var(--dim); font-weight:700; font-size:10px}
-  .shot .vid{margin-top:9px} .shot video{width:100%; border-radius:9px; background:#000}
-  .shot .vstat{font-size:11px; color:var(--dim); margin-top:7px; font-family:"JetBrains Mono"}
-  details.set{margin-bottom:16px}
-  details.set summary{cursor:pointer; font-size:12.5px; color:var(--mut); padding:11px 14px; list-style:none; background:var(--panel); border:1px solid var(--line); border-radius:12px}
-  details.set summary::-webkit-details-marker{display:none} details.set summary::before{content:"⚙ "; }
-  details.set[open] summary{border-radius:12px 12px 0 0}
-  .kv{display:grid; grid-template-columns:1fr 1fr; gap:11px} @media(max-width:560px){ .kv{grid-template-columns:1fr} .seg{flex-direction:column} }
-  .hist-item{background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:13px; margin-bottom:8px; transition:.15s} .hist-item:hover{border-color:var(--red)}
-  .hist-item .ht{font-weight:700} .hist-item .hm{font-size:11px; color:var(--dim); font-family:"JetBrains Mono"; margin-top:3px}
-  .hist-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
-  .hist-video-box{margin-top:10px; border:1px solid var(--line); border-radius:10px; background:rgba(12,17,24,.55); overflow:hidden}
-  .hist-video-box summary{cursor:pointer; list-style:none; padding:9px 11px; font-size:12px; color:#bcd6ff; font-weight:800}
-  .hist-video-box summary::-webkit-details-marker{display:none}
-  .hist-video-box summary::before{content:"▶ "; color:var(--gold)}
-  .hist-video-box[open] summary::before{content:"▼ "}
-  .hist-videos{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:0 10px 10px}
-  .hist-videos video{width:100%; border-radius:9px; background:#000; display:block}
-  .hist-videos .vurl{font-size:10px; color:var(--dim); word-break:break-all; margin-top:4px; font-family:"JetBrains Mono"}
-  @media(max-width:720px){ .hist-videos{grid-template-columns:1fr} }
-  .hist-open{font-size:11px; color:#bcd6ff; background:rgba(91,157,255,.12); border:1px solid rgba(91,157,255,.26); border-radius:999px; padding:5px 10px}
-  .hist-search{display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; margin-bottom:10px}
-  .hist-search input{padding:10px 12px; font-size:13px}
-  .hist-toggle{display:flex; gap:6px; flex-wrap:wrap}
-  .hist-toggle button{padding:8px 11px; font-size:11.5px}
-  .hist-toggle button.on{background:var(--gold); color:#1a1205; border-color:transparent}
-  @media(max-width:720px){ .hist-search{grid-template-columns:1fr} }
-  .pill{font-size:10px; padding:2px 8px; border-radius:999px; margin-left:7px} .pill.saved{background:rgba(52,208,127,.16); color:#8fe9b6} .pill.local{background:rgba(224,177,62,.16); color:var(--gold)}
-  .live-panel{margin:16px 0 2px; padding:14px; background:rgba(91,157,255,.06); border:1px solid rgba(91,157,255,.22); border-radius:13px}
-  .live-panel .lp-head{display:flex; gap:10px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; margin-bottom:12px}
-  .live-panel .lp-title{font-weight:900; font-size:14px}
-  .live-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
-  .live-card{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:10px; min-width:0}
-  .live-card .role{font-weight:800; font-size:12px; color:var(--ink); margin-bottom:8px}
-  .photo-box{height:150px; border-radius:10px; border:1px dashed var(--line2); background:#0c1118; display:grid; place-items:center; overflow:hidden; margin-bottom:9px}
-  .photo-box img{width:100%; height:100%; object-fit:cover}
-  .photo-box .empty{font-size:12px; color:var(--dim); text-align:center; padding:10px}
-  .live-card .meta{font-size:10.5px; color:var(--dim); min-height:18px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .file-input{display:none}
-  @media(max-width:720px){ .live-grid{grid-template-columns:1fr} .photo-box{height:180px} }
-  .hide{display:none !important}
-  code.sql{display:block; white-space:pre; background:#080b10; border:1px solid var(--line); border-radius:9px; padding:13px; font-family:"JetBrains Mono"; font-size:11px; color:#bcd6ff; overflow:auto; margin-top:8px}
-  .restore .rlab{font-weight:800; color:var(--ok); margin-bottom:4px; font-size:15px}
+:root {
+  --bg: #fff7e7;
+  --bg-soft: #fffdf7;
+  --ink: #1f1f1f;
+  --muted: #70685d;
+  --line: #eadcc6;
+  --red: #e53935;
+  --orange: #ff9f1c;
+  --gold: #f8d35f;
+  --blue: #3688ff;
+  --green: #00a86b;
+  --panel: rgba(255, 255, 255, 0.86);
+  --shadow: 0 20px 60px rgba(113, 74, 20, 0.16);
+  --radius: 28px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--ink);
+  font-family: "Zen Kaku Gothic New", system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 159, 28, 0.26), transparent 30%),
+    radial-gradient(circle at 88% 8%, rgba(54, 136, 255, 0.16), transparent 27%),
+    radial-gradient(circle at 50% 100%, rgba(229, 57, 53, 0.14), transparent 38%),
+    var(--bg);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.logo-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  color: #fff;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--red), #a31313);
+  box-shadow: 0 14px 28px rgba(229, 57, 53, 0.28);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(34px, 7vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.lead {
+  max-width: 660px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.stage-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.panel {
+  overflow: hidden;
+  border: 1px solid rgba(234, 220, 198, 0.9);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+}
+
+.step-tab {
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.step-tab.active {
+  background: #fff;
+  color: var(--red);
+}
+
+.screen {
+  display: none;
+  padding: clamp(22px, 4vw, 42px);
+}
+
+.screen.active {
+  display: block;
+}
+
+.screen-head {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.screen-title {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.2;
+}
+
+.screen-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.character-card {
+  position: relative;
+  min-height: 290px;
+  padding: 22px;
+  border: 2px solid transparent;
+  border-radius: 26px;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 14px 34px rgba(86, 54, 12, 0.08);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.character-card:hover,
+.character-card.selected {
+  transform: translateY(-4px);
+  border-color: var(--red);
+  box-shadow: 0 20px 46px rgba(229, 57, 53, 0.16);
+}
+
+.character-card.selected::after {
+  content: "選択中";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.avatar {
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  margin-bottom: 18px;
+  border-radius: 32px;
+  background: linear-gradient(135deg, var(--avatar-a), var(--avatar-b));
+  color: #fff;
+  font-size: 54px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44), 0 16px 30px rgba(0, 0, 0, 0.12);
+}
+
+.character-card h3 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.character-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.tagline {
+  display: inline-flex;
+  margin-top: 16px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #fff7dc;
+  color: #7b5300;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form-wrap {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 30px;
+  align-items: center;
+}
+
+.selected-preview {
+  padding: 22px;
+  border-radius: 28px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 14px 34px rgba(86, 54, 12, 0.08);
+}
+
+.selected-preview .avatar {
+  margin: 0 auto 16px;
+}
+
+.name-form label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.name-form input {
+  width: 100%;
+  padding: 18px 20px;
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 900;
+  outline: none;
+}
+
+.name-form input:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 5px rgba(229, 57, 53, 0.1);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 16px;
+  padding: 14px 20px;
+  font-weight: 900;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--red), #b81f1f);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(229, 57, 53, 0.28);
+}
+
+.btn.secondary {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.chat-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  min-height: 560px;
+}
+
+.buddy-sidebar {
+  padding: 22px;
+  border-radius: 26px;
+  background: #fff;
+}
+
+.buddy-sidebar .avatar {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 16px;
+  font-size: 68px;
+}
+
+.buddy-sidebar h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 30px;
+}
+
+.buddy-meta {
+  margin: 8px 0 18px;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 700;
+}
+
+.memory-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: #fff8e7;
+  color: #6a4a04;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.chat-main {
+  display: grid;
+  min-height: 560px;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: #fffdf8;
+}
+
+.chat-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.chat-top-title {
+  font-weight: 900;
+}
+
+.chat-status {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.messages {
+  overflow-y: auto;
+  padding: 22px;
+}
+
+.message {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.message.user {
+  grid-template-columns: minmax(0, 1fr) 40px;
+}
+
+.mini-avatar {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 14px;
+  background: #f2eadb;
+}
+
+.message.user .mini-avatar {
+  grid-column: 2;
+  background: #e9f2ff;
+}
+
+.bubble {
+  max-width: 760px;
+  padding: 14px 16px;
+  border-radius: 18px 18px 18px 6px;
+  background: #fff;
+  border: 1px solid var(--line);
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.message.user .bubble {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  border-color: #cfe3ff;
+  border-radius: 18px 18px 6px 18px;
+  background: #edf6ff;
+}
+
+.chat-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 16px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+}
+
+.chat-form textarea {
+  width: 100%;
+  min-height: 54px;
+  max-height: 160px;
+  padding: 14px 16px;
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  resize: vertical;
+  outline: none;
+}
+
+.chat-form textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 5px rgba(54, 136, 255, 0.1);
+}
+
+.notice {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 860px) {
+  .hero,
+  .form-wrap,
+  .chat-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .character-grid,
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .stage-pill {
+    justify-self: start;
+  }
+}
 </style>
 </head>
 <body>
-<div class="badge">KINJO STAFF <span class="mono" id="badgeVer">v2.2</span></div>
-
-<div class="wrap">
-  <div class="toplinks">
-    <a class="tl tl-red" href="https://claude.ai/chat/8c9eb88c-b628-43ad-ad91-740b0818a4fc" target="_blank" rel="noopener">🤖 Claudeで修正</a>
-    <button class="tl" onclick="copyClaudeHandoff()">📋 引き継ぎコピー</button>
-    <a class="tl" href="https://kinjotaichijapan-stack.github.io/kinjo-staff-app/" target="_blank" rel="noopener">🌐 公開ページ</a>
-  </div>
-
-  <header class="hd">
-    <div class="logo">研</div>
-    <div><h1>KINJO STAFF <span class="hver" id="hdVer">v2.2</span></h1><div class="sub">従業員研修アニメ・自動生成 — 真面目トーン / 15秒1本完結 / YouTube 16:9</div></div>
-    <div class="track">TRACK 3 / STAFF<br><span class="mono">そうじ・みだしなみ</span></div>
-  </header>
-
-  <div class="conn"><span class="dot" id="connDot"></span><span id="connMsg" class="mono">Supabase接続中…</span></div>
-
-  <div class="card accent">
-    <div class="h2"><span class="n g">▶</span> まずここ：KINJOLANDのキーを復元</div>
-    <p class="muted" style="margin:0 0 12px">ANIMEアプリで「クラウド保存」した時の <b>暗証番号</b> を入れて復元 → Claude / UseAPI / Dreamina のキーが自動で入ります（毎回入力不要）。</p>
-    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-      <input type="password" id="syncPass" placeholder="暗証番号を入力" autocomplete="off" style="max-width:280px; letter-spacing:3px; text-align:center">
-      <button class="btn primary" onclick="restoreKeys()">⬇️ 復元する</button>
-      <span class="muted" id="restoreMsg"></span>
+<main class="app">
+  <section class="hero">
+    <div>
+      <div class="logo"><span class="logo-mark">相</span><span>KINJOLAND AIBUDDY</span></div>
+      <h1>相棒AIを<br>育てはじめよう</h1>
+      <p class="lead">KINJOLANDのキャラを1体選んで、名前をつけて、今日から相談できる小さなWebアプリです。保存はまずこの端末だけ。あとからSupabaseに接続できます。</p>
     </div>
-    <div class="hint">※ 手入力したい場合は下の「⚙ APIキー設定」から。</div>
-  </div>
+    <div class="stage-pill" id="stagePill">STEP 1 / キャラ選択</div>
+  </section>
 
-  <details class="set">
-    <summary>APIキー設定（Claude／UseAPI。この端末にのみ保存）</summary>
-    <div class="card" style="border-radius:0 0 12px 12px; margin-top:-1px">
-      <div class="kv">
-        <div><label>Claude APIキー（必須）</label><input type="password" id="claudeKey" placeholder="sk-ant-..." autocomplete="off"></div>
-        <div><label>UseAPI.net トークン</label><input type="password" id="useapiToken" placeholder="user:XXXX-XXXX" autocomplete="off"></div>
-        <div><label>Dreamina メールアドレス</label><input type="text" id="dreaminaEmail" placeholder="kinjoland1@gmail.com"></div>
-        <div><label>リージョン</label><input type="text" id="dreaminaRegion" placeholder="CA"></div>
-        <div><label>モデル（Dreamina）</label>
-          <select id="dreaminaModel"><option value="seedance-2.0-fast">Seedance 2.0 Fast（おすすめ）</option><option value="seedance-2.0">Seedance 2.0</option><option value="seedance-1.5-pro">Seedance 1.5 Pro</option></select></div>
-      </div>
-      <div class="toolbar" style="margin-top:14px">
-        <button class="btn ghost sm" onclick="saveSettings()">設定を保存</button>
-        <button class="btn ghost sm" onclick="showSQL()">研修用テーブル作成SQL</button>
-        <div class="spacer"></div><span class="muted" id="setMsg"></span>
-      </div>
-      <div id="sqlBox" class="hide"></div>
-    </div>
-  </details>
-
-  <div class="card">
-    <div class="h2"><span class="n">1</span> 作る内容を決める</div>
-
-    <label>スタイル</label>
-    <div class="seg" id="styleSeg">
-      <div class="opt on" data-style="anime" onclick="setStyle('anime')"><div class="big">🎨 アニメ版</div><div class="small">KINJOキャラ <span class="asset-count" id="charPhotoCount">画像 0/3</span></div></div>
-      <div class="opt" data-style="live" onclick="setStyle('live')"><div class="big">🎥 実写版</div><div class="small">今回の出演スタッフ <span class="asset-count" id="livePhotoCount">写真 0/1</span></div></div>
+  <section class="panel">
+    <div class="steps" aria-label="画面の流れ">
+      <div class="step-tab active" data-tab="select">1. キャラ選択</div>
+      <div class="step-tab" data-tab="name">2. 名前づけ</div>
+      <div class="step-tab" data-tab="chat">3. チャット</div>
     </div>
 
-    <div class="live-panel" id="charPhotoPanel">
-      <div class="lp-head">
+    <section class="screen active" id="selectScreen">
+      <div class="screen-head">
         <div>
-          <div class="lp-title">キャラクター画像登録</div>
-          <div class="hint">金ちゃん・GPP・MRキンジョマンの画像を登録すると、アニメ版の生成時に参照画像として優先して使います。</div>
+          <h2 class="screen-title">相棒にするキャラを選んでください</h2>
+          <p class="screen-note">まずは祈って解決するサングラス・金ちゃん・太陽くんの3体からスタートします。</p>
         </div>
-        <button class="btn ghost sm" onclick="clearCharPhotos()">全部クリア</button>
       </div>
-      <div class="live-grid" id="charPhotoGrid"></div>
-    </div>
-    <div class="live-panel hide" id="livePhotoPanel">
-      <div class="lp-head">
+      <div class="character-grid" id="characterGrid"></div>
+      <div class="actions">
+        <button class="btn primary" id="toNameBtn" disabled>この子にする</button>
+        <button class="btn secondary" id="restoreBtn">前回の相棒を開く</button>
+      </div>
+      <p class="notice">Claude APIキーはブラウザに保存しません。チャット送信時はNetlify Functionsを通して安全にClaudeへ送ります。</p>
+    </section>
+
+    <section class="screen" id="nameScreen">
+      <div class="screen-head">
         <div>
-          <div class="lp-title">実写写真登録</div>
-          <div class="hint">今回の動画で使う実写スタッフを1人登録します。動画ごとに写真を差し替えて使えます。</div>
+          <h2 class="screen-title">名前をつけてください</h2>
+          <p class="screen-note">飼い主が呼びたい名前をつけると、相棒AIがその名前で返事します。</p>
         </div>
-        <button class="btn ghost sm" onclick="clearLivePhotos()">全部クリア</button>
       </div>
-      <div class="live-grid" id="livePhotoGrid"></div>
-    </div>
-
-    <label>モード</label>
-    <div class="seg blue" id="modeSeg">
-      <div class="opt on" data-mode="auto" onclick="setMode('auto')"><div class="big">🤖 おまかせ</div><div class="small">カテゴリ→AIが全部作る</div></div>
-      <div class="opt" data-mode="manual" onclick="setMode('manual')"><div class="big">✍️ 指示モード</div><div class="small">タイトル＋指示→展開</div></div>
-    </div>
-
-    <label id="charLabel">出てくるキャラ <span class="muted">（複数OK・未選択ならAIにおまかせ）</span></label>
-    <div class="chips" id="charPicker"></div>
-
-    <div id="autoBox">
-      <label>清掃・研修カテゴリ</label>
-      <div class="chips" id="catChips"></div>
-      <label>テーマ <span class="muted">（大まかでOK・細かい所はAIが決めます）</span></label>
-      <div class="chips" id="themeChips"></div>
-      <input type="text" id="theme" placeholder="例：ベッドメイク" style="margin-top:10px">
-      <label>細かい内容・現場メモ <span class="muted">（任意・箇条書きでもOK）</span></label>
-      <textarea id="detailInput" rows="4" placeholder="例：クーラー清掃。フィルターを外す、ホコリを取る、吹き出し口を拭く、最後に水気と動作確認。お客様が見える所をきれいに。"></textarea>
-      <div class="hint">テーマだけでもOK。細かい内容を入れると、AIが15秒の研修動画向けに1ルールへ絞って具体化します。</div>
-    </div>
-
-    <div id="manualBox" class="hide">
-      <label>タイトル <span class="muted">（任意）</span></label>
-      <input type="text" id="titleInput" placeholder="例：鏡をピカピカにする3つのコツ">
-      <label>指示・内容 <span class="muted">（任意・メモでもOK）</span></label>
-      <textarea id="contentInput" rows="4" placeholder="例：新人が鏡を拭くけど水滴が残る。先輩が『上から下に、最後に乾拭き』と理由つきで教える。"></textarea>
-      <div class="hint">タイトルだけ・短いメモだけでもOK。足りない展開はAIが完成形に膨らませます。</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="h2"><span class="n">2</span> シナリオを自動生成</div>
-    <div class="toolbar">
-      <button class="btn primary" id="genBtn" onclick="generateScenario()">シナリオ生成</button>
-      <span class="muted">→ 生成と同時に Supabase＋端末 に自動保存</span>
-    </div>
-    <div class="status" id="genStatus"></div>
-  </div>
-
-  <div class="card hide" id="scCard">
-    <div class="h2"><span class="n">3</span> シナリオ <span id="saveBadge"></span></div>
-    <div id="scOut"></div>
-    <div class="toolbar" style="margin-top:14px">
-      <button class="btn gold sm" onclick="copyAllPrompts()">全ショットのプロンプトをコピー</button>
-      <button class="btn ghost sm" onclick="copyCapcutGuide()">CapCut台本をコピー</button>
-      <button class="btn ghost sm" onclick="resaveScenario()">手動で再保存</button>
-    </div>
-  </div>
-
-  <div class="card hide" id="vidCard">
-    <div class="h2"><span class="n">4</span> 動画生成（Dreamina / Seedance・15秒1本・16:9）</div>
-    <div class="toolbar">
-      <button class="btn primary" id="vidBtn" onclick="generateVideos(false)">🎬 15秒動画を生成</button>
-    </div>
-    <div class="status" id="vidStatus"></div>
-    <div class="job hide" id="videoJob">
-      <div class="job-head">
-        <div class="job-title" id="videoJobTitle">生成準備中</div>
-        <div class="job-step" id="videoJobStep">0%</div>
+      <div class="form-wrap">
+        <div class="selected-preview" id="namePreview"></div>
+        <form class="name-form" id="nameForm">
+          <label for="buddyName">相棒の名前</label>
+          <input id="buddyName" type="text" maxlength="24" autocomplete="off" placeholder="例：きんちゃん">
+          <div class="actions">
+            <button class="btn primary" type="submit">チャットを始める</button>
+            <button class="btn secondary" type="button" id="backToSelectBtn">選び直す</button>
+          </div>
+          <p class="notice">名前と会話履歴はlocalStorageに保存します。ブラウザを変えるとまだ引き継がれません。</p>
+        </form>
       </div>
-      <div class="job-bar"><div class="job-fill" id="videoJobFill"></div></div>
-      <div class="job-detail" id="videoJobDetail">Dreaminaへ送信準備をしています。</div>
-      <div class="job-note">この表示が出ている間は作成中です。通常2〜3分、混雑時は10分ほど待つことがあります。</div>
-    </div>
-  </div>
+    </section>
 
-  <div class="card">
-    <div class="h2"><span class="n">H</span> 履歴</div>
-    <div class="muted" style="margin:-4px 0 10px">保存したシナリオと動画URLはこの下に自動表示されます。タイトル・カテゴリ・内容で検索できます。</div>
-    <div class="hist-search">
-      <input type="text" id="histSearch" placeholder="履歴検索：例 ベッドメイク / ゴミ / 実写 / 動画" oninput="renderHistoryView()">
-      <div class="hist-toggle">
-        <button class="btn ghost sm on" id="histSourceSupabase" onclick="setHistorySource('supabase')">Supabase</button>
-        <button class="btn ghost sm" id="histSourceLocal" onclick="setHistorySource('local')">端末</button>
+    <section class="screen" id="chatScreen">
+      <div class="chat-shell">
+        <aside class="buddy-sidebar">
+          <div id="buddyAvatar"></div>
+          <h2 id="buddyDisplayName"></h2>
+          <div class="buddy-meta" id="buddyCharacterName"></div>
+          <div class="memory-card">
+            <strong>今の状態</strong><br>
+            レベル 1 / はじめての相棒<br>
+            育成機能とSupabase保存は次の段階で追加予定です。
+          </div>
+          <div class="actions">
+            <button class="btn secondary" id="renameBtn">名前を変える</button>
+            <button class="btn secondary" id="resetBtn">最初から</button>
+          </div>
+        </aside>
+        <section class="chat-main" aria-label="チャット">
+          <div class="chat-top">
+            <div>
+              <div class="chat-top-title" id="chatTitle">相棒AIチャット</div>
+              <div class="chat-status" id="chatStatus">準備OK</div>
+            </div>
+            <button class="btn secondary" id="clearChatBtn">会話を消す</button>
+          </div>
+          <div class="messages" id="messages"></div>
+          <form class="chat-form" id="chatForm">
+            <textarea id="chatInput" placeholder="相談したいことを書いてください。Enterで送信、Shift+Enterで改行。" required></textarea>
+            <button class="btn primary" id="sendBtn" type="submit">送信</button>
+          </form>
+        </section>
       </div>
-      <label class="muted" style="margin:0; display:flex; gap:7px; align-items:center"><input type="checkbox" id="histVideoOnly" onchange="renderHistoryView()">動画ありだけ</label>
-    </div>
-    <div class="toolbar" style="margin-bottom:10px">
-      <button class="btn ghost sm" onclick="loadHistory()">最新に更新</button>
-      <button class="btn ghost sm" onclick="loadLocalHistory()">端末バックアップを表示</button>
-      <button class="btn ghost sm" onclick="exportLocalHistory()">履歴を書き出し</button>
-    </div>
-    <div class="status" id="histStatus"></div>
-    <div id="histOut"><div class="muted">保存履歴を読み込み中…</div></div>
-  </div>
-</div>
+    </section>
+  </section>
+</main>
 
 <script>
-/* ===== KINJO STAFF v3.9 ===== */
-const EMBED_SUPABASE_URL='https://hpxkfpxfduamhouuvcqt.supabase.co';
-const EMBED_SUPABASE_ANON='sb_publishable_9v0w2p3jTxowlfu3t3SMdg_cdPUZ6Sd';
-const STAFF_TABLE='kinjo_staff_videos', VIDEO_BUCKET='kinjoland-videos';
-const BG_BASE=EMBED_SUPABASE_URL+'/storage/v1/object/public/kinjoland-images/';
-const BG_MAP={ clean:BG_BASE+'bg_clean.png', dirty:BG_BASE+'bg_dirty.png', construction:BG_BASE+'bg_construction.png', rain:BG_BASE+'bg_rain.png', night:BG_BASE+'bg_night.png', future:BG_BASE+'bg_future.png' };
-const BG_TYPES=['clean','dirty','construction','rain','night','future'];
-const RATIO='16:9';
+const STORAGE_KEY = "kinjoland_aibuddy_state_v1";
 
-const ANIME_CHARS=[['金ちゃん','🧑'],['GPP','🤖'],['MRキンジョマン','🦸']];
-const LIVE_ROLES=[['出演スタッフ','🧑‍💼']];
+const CHARACTERS = [
+  {
+    id: "sunglasses",
+    character: "祈って解決するサングラス",
+    icon: "😎",
+    colors: ["#222222", "#5d6978"],
+    summary: "ミステリアスで頼れる存在。困った時は一緒に祈るように落ち着き、重い悩みも静かに受け止めます。",
+    tagline: "祈りで冷静さを取り戻す相棒"
+  },
+  {
+    id: "kinchan",
+    character: "金ちゃん",
+    icon: "👑",
+    colors: ["#ffb703", "#fb5607"],
+    summary: "明るく前向き。小さな成功を一緒に喜び、元気が出る言葉で背中を押します。",
+    tagline: "元気をくれる相棒"
+  },
+  {
+    id: "taiyokun",
+    character: "太陽くん",
+    icon: "☀️",
+    colors: ["#ffd166", "#ef476f"],
+    summary: "ぽかぽかした聞き上手。焦りや不安をやわらげながら、やさしく寄り添います。",
+    tagline: "あたたかく寄り添う相棒"
+  }
+];
 
-const THEME_PRESETS={
-  '客室清掃':['ベッドメイク','バスルーム','トイレ','アメニティ','ゴミ処理','床掃除','窓・ガラス','ほこり取り','臭いチェック','忘れ物確認','リモコン除菌','グラス交換'],
-  '共用部清掃':['ロビー床','エレベーター','階段','共用トイレ','玄関ガラス','屋外まわり'],
-  'リネン・備品':['タオルたたみ','シーツ交換','枕カバー','在庫補充','カート整頓'],
-  'みだしなみ':['爪','髪','制服','名札','靴','香り'],
-  '接客所作':['お辞儀','キーの渡し方','目線','館内案内','電話応対','荷物'],
-  '安全衛生':['手洗い','食器の扱い','用具の色分け','こぼれ対応','非常口','薬品の扱い']
+let state = {
+  selectedCharacterId: null,
+  buddyName: "",
+  messages: []
 };
-const CATEGORIES=Object.keys(THEME_PRESETS);
 
-let supabaseClient=null, characters=[], currentScenario=null, currentRecordId=null, currentLocalId=null;
-let selectedCat='客室清掃', currentMode='auto', currentStyle='anime', selectedChars=[];
-let histCache=[], localCache=[], historySource='supabase';
-const bgAssetCache={};
-const CHAR_PHOTO_KEY='kinjo_staff_char_photos';
-const LIVE_PHOTO_KEY='kinjo_staff_live_photos';
-const $=id=>document.getElementById(id);
-const APP_VERSION='v3.9';
+const $ = (id) => document.getElementById(id);
 
-async function init(){
-  $('badgeVer').textContent=APP_VERSION; $('hdVer').textContent=APP_VERSION; document.title='KINJO STAFF '+APP_VERSION;
-  const cc=$('catChips');
-  CATEGORIES.forEach(c=>{ const el=document.createElement('div'); el.className='chip cat'+(c===selectedCat?' on':''); el.textContent=c; el.onclick=()=>{selectedCat=c; renderCats(); renderThemes();}; cc.appendChild(el); });
-  renderThemes(); renderCharPicker(); renderCharPhotos(); renderLivePhotos(); togglePhotoPanels();
-  $('claudeKey').value=localStorage.getItem('claude_api_key')||'';
-  $('useapiToken').value=localStorage.getItem('useapi_token')||'';
-  $('dreaminaEmail').value=localStorage.getItem('dreamina_email')||'';
-  $('dreaminaRegion').value=localStorage.getItem('dreamina_region')||'CA';
-  $('dreaminaModel').value=localStorage.getItem('dreamina_model')||'seedance-2.0-fast';
-  loadLocalHistory();
-  await connectSupabase();
-  await loadHistory();
-}
-function activeCast(){ return currentStyle==='anime'?ANIME_CHARS:LIVE_ROLES; }
-function setStyle(s){ currentStyle=s; document.querySelectorAll('#styleSeg .opt').forEach(o=>o.classList.toggle('on',o.dataset.style===s)); selectedChars=[]; renderCharPicker(); togglePhotoPanels();
-  if(currentScenario){ currentScenario.style=s; currentScenario=normalizeScenario(currentScenario,currentScenario.category,currentScenario.theme); renderScenario(currentScenario); } }
-function setMode(m){ currentMode=m; document.querySelectorAll('#modeSeg .opt').forEach(o=>o.classList.toggle('on',o.dataset.mode===m)); $('autoBox').classList.toggle('hide',m!=='auto'); $('manualBox').classList.toggle('hide',m!=='manual'); }
-function renderCharPicker(){ const cp=$('charPicker'); cp.innerHTML='';
-  activeCast().forEach(([name,emo])=>{ const el=document.createElement('div'); el.className='chip char'; el.textContent=emo+' '+name;
-    el.onclick=()=>{ el.classList.toggle('on'); selectedChars=[...document.querySelectorAll('#charPicker .chip.on')].map(x=>x.textContent.replace(/^\S+\s/,'')); }; cp.appendChild(el); }); }
-function renderCats(){ document.querySelectorAll('#catChips .chip').forEach(el=>el.classList.toggle('on', el.textContent===selectedCat)); }
-function renderThemes(){ const tc=$('themeChips'); tc.innerHTML=''; (THEME_PRESETS[selectedCat]||[]).forEach(t=>{ const el=document.createElement('div'); el.className='chip'; el.textContent=t; el.onclick=()=>{ $('theme').value=t; document.querySelectorAll('#themeChips .chip').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; tc.appendChild(el); }); }
-function togglePhotoPanels(){ $('charPhotoPanel').classList.toggle('hide',currentStyle!=='anime'); $('livePhotoPanel').classList.toggle('hide',currentStyle!=='live'); }
-function charPhotos(){ try{return JSON.parse(localStorage.getItem(CHAR_PHOTO_KEY)||'{}');}catch(e){return{};} }
-function saveCharPhotos(obj){ localStorage.setItem(CHAR_PHOTO_KEY,JSON.stringify(obj)); }
-function renderCharPhotos(){ const grid=$('charPhotoGrid'); grid.innerHTML=''; const photos=charPhotos();
-  $('charPhotoCount').textContent=`画像 ${ANIME_CHARS.filter(([name])=>photos[name]&&photos[name].dataUrl).length}/3`;
-  ANIME_CHARS.forEach(([name,emo])=>{ const p=photos[name]; const card=document.createElement('div'); card.className='live-card';
-    card.innerHTML=`<div class="role">${emo} ${esc(name)}</div>
-      <label class="photo-box" for="char-photo-${escAttr(name)}">${p&&p.dataUrl?`<img src="${p.dataUrl}" alt="${escAttr(name)}">`:'<div class="empty">画像を登録</div>'}</label>
-      <input class="file-input" id="char-photo-${escAttr(name)}" type="file" accept="image/*" onchange="onCharPhoto('${escAttr(name)}',this)">
-      <div class="toolbar"><button class="btn ghost sm" onclick="pickCharPhoto('${escAttr(name)}')">画像を選ぶ</button><button class="btn ghost sm" onclick="removeCharPhoto('${escAttr(name)}')">削除</button></div>
-      <div class="meta">${p?esc(p.fileName||'登録済み'):'未登録'}</div>`;
-    grid.appendChild(card); }); }
-function pickCharPhoto(role){ const el=$('char-photo-'+role); if(el) el.click(); }
-async function onCharPhoto(role,input){ const file=input.files&&input.files[0]; if(!file) return;
-  try{ const dataUrl=await resizePhoto(file); const photos=charPhotos(); photos[role]={dataUrl,fileName:file.name,updatedAt:Date.now(),assetRef:null}; saveCharPhotos(photos); renderCharPhotos(); }
-  catch(e){ alert('画像の登録に失敗しました: '+(e.message||e)); } finally{ input.value=''; } }
-function removeCharPhoto(role){ const photos=charPhotos(); delete photos[role]; saveCharPhotos(photos); renderCharPhotos(); }
-function clearCharPhotos(){ saveCharPhotos({}); renderCharPhotos(); }
-function setCharPhotoAssetRef(role,assetRef){ const photos=charPhotos(); if(photos[role]){ photos[role].assetRef=assetRef; saveCharPhotos(photos); } }
-function livePhotos(){ try{ const obj=JSON.parse(localStorage.getItem(LIVE_PHOTO_KEY)||'{}'); if(!obj['出演スタッフ']&&obj['新人スタッフ']) obj['出演スタッフ']=obj['新人スタッフ']; return obj; }catch(e){return{};} }
-function saveLivePhotos(obj){ localStorage.setItem(LIVE_PHOTO_KEY,JSON.stringify(obj)); }
-function renderLivePhotos(){ const grid=$('livePhotoGrid'); grid.innerHTML=''; const photos=livePhotos();
-  $('livePhotoCount').textContent=`写真 ${LIVE_ROLES.filter(([name])=>photos[name]&&photos[name].dataUrl).length}/1`;
-  LIVE_ROLES.forEach(([name,emo])=>{ const p=photos[name]; const card=document.createElement('div'); card.className='live-card';
-    card.innerHTML=`<div class="role">${emo} ${esc(name)}</div>
-      <label class="photo-box" for="photo-${escAttr(name)}">${p&&p.dataUrl?`<img src="${p.dataUrl}" alt="${escAttr(name)}">`:'<div class="empty">写真を登録</div>'}</label>
-      <input class="file-input" id="photo-${escAttr(name)}" type="file" accept="image/*" onchange="onLivePhoto('${escAttr(name)}',this)">
-      <div class="toolbar"><button class="btn ghost sm" onclick="pickLivePhoto('${escAttr(name)}')">写真を選ぶ</button><button class="btn ghost sm" onclick="removeLivePhoto('${escAttr(name)}')">削除</button></div>
-      <div class="meta">${p?esc(p.fileName||'登録済み'):'未登録'}</div>`;
-    grid.appendChild(card); }); }
-function pickLivePhoto(role){ const el=$('photo-'+role); if(el) el.click(); }
-async function onLivePhoto(role,input){ const file=input.files&&input.files[0]; if(!file) return;
-  try{ const dataUrl=await resizePhoto(file); const photos=livePhotos(); photos[role]={dataUrl,fileName:file.name,updatedAt:Date.now(),assetRef:null}; saveLivePhotos(photos); renderLivePhotos(); }
-  catch(e){ alert('写真の登録に失敗しました: '+(e.message||e)); } finally{ input.value=''; } }
-function removeLivePhoto(role){ const photos=livePhotos(); delete photos[role]; saveLivePhotos(photos); renderLivePhotos(); }
-function clearLivePhotos(){ saveLivePhotos({}); renderLivePhotos(); }
-function setLivePhotoAssetRef(role,assetRef){ const photos=livePhotos(); if(photos[role]){ photos[role].assetRef=assetRef; saveLivePhotos(photos); } }
-function resizePhoto(file){ return new Promise((resolve,reject)=>{ const reader=new FileReader();
-  reader.onerror=()=>reject(new Error('画像を読めません')); reader.onload=()=>{ const img=new Image(); img.onerror=()=>reject(new Error('画像を開けません'));
-    img.onload=()=>{ const max=1400, scale=Math.min(1,max/Math.max(img.width,img.height)); const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
-      const c=document.createElement('canvas'); c.width=w; c.height=h; const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,w,h); resolve(c.toDataURL('image/jpeg',0.88)); };
-    img.src=reader.result; }; reader.readAsDataURL(file); }); }
-
-async function connectSupabase(){ try{ supabaseClient=window.supabase.createClient(EMBED_SUPABASE_URL,EMBED_SUPABASE_ANON);
-    const {data,error}=await supabaseClient.from('characters').select('*'); if(error) throw error; characters=data||[];
-    const have=ANIME_CHARS.filter(([n])=>characters.find(c=>c.name===n)).length;
-    $('connDot').className='dot on'; $('connMsg').textContent=`Supabase接続OK ／ キャラ${characters.length}件（アニメ配役 ${have}/3 確認）`;
-  }catch(e){ $('connDot').className='dot bad'; $('connMsg').textContent='Supabase接続失敗: '+(e.message||e); } }
-
-/* ===== keys ===== */
-const SECRET_KEYS=['claude_api_key','openai_api_key','image_model','supabase_url','supabase_key','suno_api_key','suno_model','suno_instrumental','useapi_token','dreamina_email','dreamina_region','dreamina_model','dreamina_ratio','dreamina_duration','upload_profile','upload_platforms','auto_post'];
-function _unb64(s){ return Uint8Array.from(atob(s),c=>c.charCodeAt(0)); }
-async function _deriveKey(p,salt){ const b=await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',false,['deriveKey']); return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},b,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }
-async function decryptSecrets(c,p){ const raw=_unb64(c); const k=await _deriveKey(p,raw.slice(0,16)); const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:raw.slice(16,28)},k,raw.slice(28)); return JSON.parse(new TextDecoder().decode(pt)); }
-async function restoreKeys(){ const pass=$('syncPass').value.trim(); if(pass.length<4){ $('restoreMsg').textContent='暗証番号を入れてください'; return; } if(!supabaseClient){ $('restoreMsg').textContent='Supabase未接続'; return; } $('restoreMsg').textContent='復元中…';
-  try{ const {data,error}=await supabaseClient.from('app_secrets').select('cipher').eq('id','default').single(); if(error||!data||!data.cipher) throw new Error('クラウドに保存が見つかりません');
-    const obj=await decryptSecrets(data.cipher,pass); SECRET_KEYS.forEach(k=>{ if(obj[k]!=null&&obj[k]!=='null') localStorage.setItem(k,obj[k]); }); refillFields(); $('restoreMsg').textContent='復元しました ✓（Claude / UseAPI / Dreamina）';
-  }catch(e){ $('restoreMsg').textContent='復元失敗（暗証番号違いかも）: '+(e.message||e); } }
-function refillFields(){ $('claudeKey').value=localStorage.getItem('claude_api_key')||''; $('useapiToken').value=localStorage.getItem('useapi_token')||''; $('dreaminaEmail').value=localStorage.getItem('dreamina_email')||''; $('dreaminaRegion').value=localStorage.getItem('dreamina_region')||'CA'; if(localStorage.getItem('dreamina_model')) $('dreaminaModel').value=localStorage.getItem('dreamina_model'); }
-function saveSettings(){ localStorage.setItem('claude_api_key',$('claudeKey').value.trim()); localStorage.setItem('useapi_token',$('useapiToken').value.trim()); localStorage.setItem('dreamina_email',$('dreaminaEmail').value.trim()); localStorage.setItem('dreamina_region',($('dreaminaRegion').value.trim()||'CA')); localStorage.setItem('dreamina_model',$('dreaminaModel').value); const m=$('setMsg'); m.textContent='保存しました ✓'; setTimeout(()=>m.textContent='',2500); }
-function copyClaudeHandoff(){ const txt=`Claude / Codex 引き継ぎメモ
-
-目的:
-KINJO STAFF は、ホテルスタッフ向けの15秒研修動画を作るWebアプリです。Claudeでシナリオ生成、UseAPI/Dreamina/Seedanceで横動画生成、Supabaseに履歴と動画URLを保存します。
-
-公開URL:
-- Netlify本番: https://staffstaff.netlify.app
-- 予備 GitHub Pages: https://kinjotaichijapan-stack.github.io/kinjo-staff-app/
-- GitHub repo: https://github.com/kinjotaichijapan-stack/kinjo-staff-app
-
-ローカル作業場所:
-/Users/kinjoland/Codex/kinjo_staff_v2_2_deploy
-
-重要ファイル:
-- index.html だけの静的アプリです。基本はこの1ファイルを修正してください。
-- .netlify/ はローカル設定なのでコミットしないでください。
-
-現在の版:
-KINJO STAFF ${APP_VERSION}
-
-主な機能:
-- アニメ版 / 実写版の切替
-- アニメ用キャラ画像登録、実写スタッフ写真登録
-- 清掃/みだしなみ/接客などの研修シナリオ生成
-- Dreamina / Seedance 15秒横動画生成
-- 生成動画URLをSupabaseと端末バックアップへ保存
-- 履歴内で検索、動画ありだけ絞り込み、履歴カード内で動画再生
-- Dreaminaエラー ret 1002 / 1006 などを日本語で案内
-
-Supabase:
-- URL: https://hpxkfpxfduamhouuvcqt.supabase.co
-- table: kinjo_staff_videos
-- video bucket: kinjoland-videos
-- characters table も参照しています
-- APIキーやUseAPIトークンはユーザー端末のlocalStorageまたはapp_secretsから復元。秘密キーはこの引き継ぎ文に書かないこと。
-
-Netlify:
-- site name: staffstaff
-- site id: c9287e5f-d886-42ba-a92f-dd3e7a2355a1
-
-デプロイ手順:
-1. 作業フォルダへ移動
-   cd /Users/kinjoland/Codex/kinjo_staff_v2_2_deploy
-
-2. 構文チェック
-   node -e "const fs=require('fs'); const html=fs.readFileSync('index.html','utf8'); const scripts=[...html.matchAll(/<script>([\\\\s\\\\S]*?)<\\\\/script>/g)].map(m=>m[1]); for (const s of scripts) new Function(s); console.log('ok', scripts.length);"
-
-3. Netlify本番へデプロイ
-   npx netlify deploy --prod --dir=. --site c9287e5f-d886-42ba-a92f-dd3e7a2355a1 --message "Update KINJO STAFF"
-
-4. GitHub Pages予備へ反映
-   git status --short
-   git add index.html
-   git -c user.name='KINJO TAICHI' -c user.email='kinjotaichijapan@gmail.com' commit -m "Update KINJO STAFF"
-   git push
-
-5. 確認
-   curl -L -s -o /tmp/staffstaff.html -w "%{http_code} %{url_effective}\\n" https://staffstaff.netlify.app
-   curl -L -s -o /tmp/kinjo-pages.html -w "%{http_code} %{url_effective}\\n" https://kinjotaichijapan-stack.github.io/kinjo-staff-app/
-
-注意:
-- 生成中の画面をユーザーが開いている時は、ブラウザを勝手にリロードしないでください。Dreaminaのジョブ確認が切れます。
-- ret 1006 はDreamina/CapCutのクレジット不足またはSeedance利用権限不足です。アプリ不具合ではありません。
-- ret 1002 はDreamina側の初回確認/利用規約/リージョン/モデル権限の可能性があります。
-- UIは業務用なので、派手なランディングページではなく、今の作業画面中心で改善してください。
-
-依頼:
-このアプリを引き継いで、ユーザーの要望に沿って index.html を修正し、構文チェック後にNetlifyとGitHub Pagesへ反映してください。`;
-  navigator.clipboard.writeText(txt).then(()=>{ const m=$('restoreMsg'); if(m){ m.textContent='引き継ぎ文をコピーしました ✓'; setTimeout(()=>m.textContent='',3500); } }).catch(()=>alert(txt)); }
-function showSQL(){ const box=$('sqlBox'); box.classList.toggle('hide'); box.innerHTML=`<code class="sql">CREATE TABLE IF NOT EXISTS ${STAFF_TABLE} (
-  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT now(),
-  category TEXT, theme TEXT, title TEXT, scenario JSONB, video_urls JSONB, status TEXT DEFAULT 'draft');
-ALTER TABLE ${STAFF_TABLE} ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "anon all ${STAFF_TABLE}" ON ${STAFF_TABLE} FOR ALL TO anon USING (true) WITH CHECK (true);</code>`; }
-
-/* ===== scenario generation ===== */
-function castDesc(){ if(currentStyle==='anime'){ return '配役（既存アニメキャラ）:\n- 金ちゃん: 真面目な新人。視聴者代わりに素朴な質問\n- GPP: 落ち着いた指導ロボ。理由つきで正しい手順を声で説明（本体）\n- MRキンジョマン: 完璧なお手本'; }
-  return '配役（実写スタッフ）:\n- 出演スタッフ: 登録した写真の人物。清掃や接客の手順を落ち着いて実演する'; }
-function buildSystemPrompt(){
-  const cast=activeCast().map(([n])=>n).join(' / ');
-  return `あなたはホテルの天才的指導者です。従業員研修用の短編動画（YouTube横型16:9）のシナリオを作ります。
-ブランド「KINJO LAND」。トーンは【真面目・落ち着き】。笑いは冒頭3秒の掴みだけ、本編は淡々と正しいやり方を教える（無理にズッコケさせない）。
-スタイル: ${currentStyle==='anime'?'アニメ版':'実写版'}。
-
-${castDesc()}
-使えるキャラ: ${cast}
-
-ルール:
-- 1本=1ルールに必ず絞る。テーマや現場メモが大まかな場合は、具体的にどの1ポイントに絞るかをあなたが決めて現場で役立つ具体策にする
-- ユーザーの「細かい内容・現場メモ」は最優先で反映する。ただし15秒動画に入らない場合は、最も重要な1点へ絞り、残りはチェックリストに回す
-- 手順は最大3つ。各手順に必ず「なぜ(why)」を1つ
-- 各手順に CapCut用の日本語ナレーション台本(narration)（1〜2文・落ち着いた口調）
-- 現場にそのまま貼れるチェックリスト(checklist)を3〜5項目
-- 締めの決め台詞(kimari_serifu)は「これがKINJOクオリティ！」
-- ショット(shots)は【1個だけ】。これは15秒で完結する1本の研修ショート。scene は15秒の一連のデモ映像（掴み→正しいやり方→確認まで、連続した動作・状況）を簡潔に。声・セリフは書かない（無音のデモ）。
-  voiceover はこの15秒に乗せる日本語ナレーション全文（落ち着いた敬体・3〜4文・掴み→ポイント→「これがKINJOクオリティ！」で締め・約15秒で読める長さ）。
-  onscreen_text は表示する短いテロップを ' / ' 区切りで2〜3個。
-  duration は 15、character は ${cast} から1人、bg_type は clean/dirty/construction/rain/night/future から1つ。
-
-出力は【JSONのみ】。Markdown不要。文字列値の中は【シングルクォートのみ】使用。
-スキーマ:
-{'title':string,'category':string,'theme':string,'hook':string,'steps':[{'step':number,'action':string,'why':string,'narration':string}],'checklist':[string],'kimari_serifu':'これがKINJOクオリティ！','shots':[{'shot':1,'character':string,'bg_type':string,'duration':15,'scene':string,'voiceover':string,'onscreen_text':string}]}`;
-}
-function buildUserMsg(){
-  const castNote=selectedChars.length>0?` 必ず登場させるキャラ: ${selectedChars.join('、')}。`:'';
-  if(currentMode==='manual'){ const title=$('titleInput').value.trim(), content=$('contentInput').value.trim(); const parts=[];
-    if(title) parts.push(`タイトル:「${title}」`); if(content) parts.push(`指示・内容: ${content}`); if(castNote) parts.push(castNote.trim());
-    parts.push('上記はタネ(アイデア)です。足りない展開・セリフ・場面・なぜ・チェックリストを膨らませ、研修として完成度の高い1本に。');
-    return { msg:parts.join('\n'), cat:'指示モード', theme:title||content.slice(0,20)||'カスタム' };
-  } else { const theme=$('theme').value.trim(), detail=$('detailInput').value.trim(); const parts=[`カテゴリ:「${selectedCat}」`];
-    if(theme) parts.push(`テーマ(大まか):「${theme}」`);
-    if(detail) parts.push(`細かい内容・現場メモ: ${detail}`);
-    parts.push('上記をもとに、テレビで流す15秒の研修動画として一番伝えるべき1ルールへ絞り、手順・理由・チェックリストを具体化してください。');
-    if(castNote) parts.push(castNote.trim());
-    return { msg:parts.join('\n'), cat:selectedCat, theme:theme||detail.slice(0,20)||'清掃研修' }; }
-}
-async function generateScenario(){
-  const claudeKey=localStorage.getItem('claude_api_key'); if(!claudeKey){ setStatus('genStatus','err','Claude APIキーを設定/復元してください。'); return; }
-  const u=buildUserMsg();
-  if(currentMode==='auto'&&!u.theme){ setStatus('genStatus','err','テーマか細かい内容を入力してください。'); return; }
-  if(currentMode==='manual'&&!$('titleInput').value.trim()&&!$('contentInput').value.trim()&&selectedChars.length===0){ setStatus('genStatus','err','タイトル・指示・キャラのどれか1つは入れてください。'); return; }
-  const btn=$('genBtn'); btn.disabled=true; btn.textContent='生成中…'; setStatus('genStatus','work','シナリオ生成中…（'+(currentStyle==='anime'?'アニメ版':'実写版')+'・真面目トーン・16:9）');
-  try{ const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'Content-Type':'application/json','x-api-key':claudeKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:4000,system:buildSystemPrompt(),messages:[{role:'user',content:u.msg}]}) });
-    if(!res.ok){ const er=await res.json().catch(()=>({})); throw new Error('Claude: '+((er.error&&er.error.message)||('HTTP '+res.status))); }
-    const data=await res.json(); let text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').replace(/```json|```/g,'').trim();
-    const obj=robustParse(text); if(!obj) throw new Error('JSON解析に失敗。もう一度生成してください。');
-    obj.style=currentStyle; currentScenario=normalizeScenario(obj,u.cat,u.theme); currentRecordId=null; currentLocalId=null; renderScenario(currentScenario);
-    setStatus('genStatus','ok','生成完了。保存します…'); await autoSave();
-  }catch(e){ setStatus('genStatus','err','エラー: '+(e.message||e)); } finally{ btn.disabled=false; btn.textContent='シナリオ生成'; }
-}
-function robustParse(t){ try{return JSON.parse(t);}catch(e){} try{const s=t.indexOf('{'),e=t.lastIndexOf('}'); if(s>=0&&e>s) return JSON.parse(t.slice(s,e+1));}catch(e){} try{let f=t.replace(/:\s*"([^"]*)"/g,(m,i)=>': "'+i.replace(/(?<!\\)"/g,"'")+'"'); const s=f.indexOf('{'),e=f.lastIndexOf('}'); return JSON.parse(f.slice(s,e+1));}catch(e){} return null; }
-function normalizeScenario(o,cat,theme){ o.category=o.category||cat; o.theme=o.theme||theme; o.style=o.style||currentStyle; o.steps=(o.steps||[]).slice(0,3);
-  const cast=activeCast().map(([n])=>n); o.shots=(o.shots||[]).slice(0,1).map((s,i)=>{ s.shot=1; if(!cast.includes(s.character)) s.character=cast[0]; if(!BG_TYPES.includes(s.bg_type)) s.bg_type='clean'; s.duration=15; s.scene=s.scene||''; s.voiceover=s.voiceover||''; return s; }); return o; }
-function ensureShotStyle(sh,style){ const cast=(style==='live'?LIVE_ROLES:ANIME_CHARS).map(([n])=>n); if(!cast.includes(sh.character)) sh.character=cast[0]; return sh; }
-
-/* ===== seedance（スタイル分岐） ===== */
-const ANIME_LOCK=' 【スタイル統一・厳守】既存キャラの見た目を参照画像と完全一致。全キャラ同じ頭身・顔サイズ・スケール、途中で大きさ/頭身を変えない、巨大化させない、大人体型にしない。サングラス・帽子は常に正しく装着。子供向け絵本タッチ、太い黒線、フラットカラー。consistent chibi proportions for ALL characters, uniform face size, same scale, no size change, no morphing.';
-const ENV={clean:'a clean tidy hotel room',dirty:'a hotel room that needs cleaning',construction:'a hotel area under maintenance',rain:'a quiet hotel interior on a rainy day',night:'a hotel interior at night',future:'a sleek modern hotel interior'};
-function buildSeedance(sh, style, omniLabels){
-  const scene=sh.scene, character=sh.character;
-  if(style==='live'){
-    const refLine=omniLabels&&omniLabels.length?`${omniLabels.map((l,i)=>`@image${i+1}(${l})`).join(' と ')} を人物参照として使用。Keep the same face, hairstyle, body type, clothing impression and identity from the reference photo.`:'';
-    return `Photorealistic live-action hotel staff training video, 16:9 horizontal, ${ENV[sh.bg_type]||ENV.clean}, a uniformed Japanese hotel staff member (${character}) calmly and clearly demonstrating the task, clean modern interior, soft natural lighting, steady instructional documentary camera.
-${refLine}
-[CRITICAL: NO talking, NO mouth movement, NO lip-sync, NO open-mouth speaking — silent clear demonstration only (narration is added later as voiceover). NO on-screen text, letters, captions, subtitles or signs.]
-Scene: ${scene}
-[TIMING: end on a calm held frame.]
-NEGATIVE PROMPT: talking, speaking, open mouth, lip sync, mouth movement, cartoon, anime, illustration, 3d cgi look, text, letters, captions, subtitles, signs, watermark, logo, extra fingers, distorted face, on-screen text.`.substring(0,4900);
-  }
-  // anime: @imageN は実際に付く参照画像と必ず一致させる（未指定時は表示用にchar+背景を仮定）
-  const labels = (omniLabels!=null) ? omniLabels : [character, '背景シーン'];
-  const head = labels.length ? (labels.map((l,i)=>`@image${i+1}(${l})`).join(' と ')+' を使用。') : '';
-  return (`2D flat picture-book anime style, thick bold black outlines, chibi characters, flat cel-shading, no 3D. Keep characters EXACTLY matching reference images. 16:9 horizontal. Calm, clean, professional hotel training tone.
-[CRITICAL: NO talking, NO mouth movement, NO lip-sync, NO open-mouth speaking — silent clear demonstration only (narration is added later as voiceover). NO speech bubbles, text, letters, kanji, subtitles, captions or signs anywhere.]
-${head}
-Scene: ${scene}
-[TIMING: end on a calm held frame.]
-NEGATIVE PROMPT: talking, speaking, open mouth, lip sync, mouth movement, speech bubble, text, letters, kanji, subtitles, captions, signs, watermark, logo, gibberish, extra fingers, face morphing, character drift, size change.`+ANIME_LOCK).substring(0,4900);
-}
-
-/* ===== render ===== */
-function renderScenario(s){ $('scCard').classList.remove('hide'); $('vidCard').classList.remove('hide');
-  restoreScenarioVideos(s,s.video_urls);
-  const stepsHtml=s.steps.map(st=>`<div class="step"><div class="num">${st.step}</div><div class="body"><div class="act">${esc(st.action)}</div><div class="why">${esc(st.why)}</div><div class="nar">${esc(st.narration||'')}</div></div></div>`).join('');
-  const checkHtml=(s.checklist||[]).map(c=>`<li>${esc(c)}</li>`).join('');
-  const shotsHtml=s.shots.map(sh=>`<div class="shot" id="shot-${sh.shot}"><div class="head"><span class="tag char">${esc(sh.character)}</span><span class="tag bg">bg:${sh.bg_type}</span><span class="tag dur">${sh.duration}s</span><span class="muted mono" style="margin-left:auto">#${sh.shot}</span></div><div class="prompt">${esc(buildSeedance(sh,s.style||currentStyle))}</div><div class="vo">${esc(sh.voiceover||'')}</div><div class="ost">${esc(sh.onscreen_text||'')}</div><div class="vid" id="vid-${sh.shot}">${sh.video_url?videoHtml(sh.video_url):''}</div><div class="vstat" id="vstat-${sh.shot}">${sh.video_url?'保存済み動画を表示中':''}</div></div>`).join('');
-  $('scOut').innerHTML=`<div class="sc-title">${esc(s.title)}</div>
-    <div class="sc-meta"><span class="sc-tag">${(s.style||currentStyle)==='anime'?'🎨 アニメ版':'🎥 実写版'}</span><span class="sc-tag">${esc(s.category)}</span><span class="sc-tag">${esc(s.theme)}</span></div>
-    <div class="block"><div class="lab">冒頭3秒・掴み</div>${esc(s.hook)}</div>
-    <div class="block"><div class="lab">手順（最大3・なぜ付き）</div>${stepsHtml}</div>
-    <div class="block"><div class="lab">現場チェックリスト</div><ul class="checklist">${checkHtml}</ul></div>
-    <div class="serifu">${esc(s.kimari_serifu||'これがKINJOクオリティ！')}</div>
-    <div class="block"><div class="lab">ショット別 Seedance プロンプト（16:9・画面文字なし・声あり）</div>${shotsHtml}</div>`;
-}
-
-/* ===== save ===== */
-async function autoSave(){ const localOk=saveLocal(); const ok=await saveSupabase(); const n=videoCount(currentScenario); $('saveBadge').innerHTML=ok?`<span class="pill saved">Supabase保存済${n?`・動画${n}本`:''}</span>`:`<span class="pill local">端末保存${n?`・動画${n}本`:''}</span>`; if(localOk){ refreshLocalCache(); if(historySource==='local') renderHistoryView(); } return ok; }
-function collectVideoUrls(){ const m={}; if(currentScenario) currentScenario.shots.forEach(sh=>{ if(sh.video_url) m[sh.shot]=sh.video_url; }); return m; }
-function saveLocal(){ try{ const arr=JSON.parse(localStorage.getItem('kinjo_staff_local')||'[]'); if(!currentLocalId) currentLocalId='local-'+Date.now(); const urls=collectVideoUrls(); const row={local_id:currentLocalId,ts:Date.now(),category:currentScenario.category,theme:currentScenario.theme,title:currentScenario.title,scenario:currentScenario,video_urls:urls,status:Object.keys(urls).length?'video_saved':'draft'}; const next=[row,...arr.filter(x=>x.local_id!==currentLocalId)].slice(0,100); localStorage.setItem('kinjo_staff_local',JSON.stringify(next)); return true; }catch(e){ console.warn('local save',e); return false; } }
-async function saveSupabase(){ if(!supabaseClient) return false; const urls=collectVideoUrls(); const row={category:currentScenario.category,theme:currentScenario.theme,title:currentScenario.title,scenario:currentScenario,video_urls:urls,status:Object.keys(urls).length?'video_saved':'draft'};
-  try{ if(currentRecordId){ const {data,error}=await supabaseClient.from(STAFF_TABLE).update(row).eq('id',currentRecordId).select('id').maybeSingle(); if(!error&&data&&data.id) return true; console.warn('supabase update fallback',error); }
-    const {data,error}=await supabaseClient.from(STAFF_TABLE).insert(row).select('id').single(); if(error) throw error; currentRecordId=data&&data.id; return !!currentRecordId;
-  }catch(e){ console.warn('supabase save',e); return false; } }
-async function resaveScenario(){ if(!currentScenario) return; await autoSave(); setStatus('genStatus','ok','再保存しました。'); }
-
-/* ===== video ===== */
-async function generateVideos(testOnly){ const token=localStorage.getItem('useapi_token'), email=localStorage.getItem('dreamina_email');
-  if(!token||!email){ setStatus('vidStatus','err','UseAPIトークンとDreaminaメールを設定/復元してください。'); return; }
-  if(!currentScenario){ setStatus('vidStatus','err','先にシナリオを生成してください。'); return; }
-  currentScenario.style=currentStyle; currentScenario=normalizeScenario(currentScenario,currentScenario.category,currentScenario.theme); renderScenario(currentScenario);
-  const shots=testOnly?currentScenario.shots.slice(0,1):currentScenario.shots; const tb=$('testBtn'); $('vidBtn').disabled=true; if(tb) tb.disabled=true;
-  $('vidBtn').textContent='生成中… 0%';
-  setStatus('vidStatus','work','生成を開始しました。下の進捗バーが動いている間は作成中です。');
-  setVideoJob('work','動画生成中',0,'Dreaminaへ送信準備をしています。');
-  let cloudSaved=0;
-  try{ for(const sh of shots){ setVStat(sh.shot,'準備中…'); setVideoJob('work','動画生成中',5,'参照画像とプロンプトを準備しています。'); const rawUrl=await generateDreaminaVideo(sh); setVStat(sh.shot,'クラウド保存中…'); setVideoJob('work','保存中',92,'動画が完成しました。クラウドへ保存しています。');
-      let saved=null; try{ saved=await saveMediaToCloud(rawUrl,VIDEO_BUCKET,`staff-${Date.now()}-s${sh.shot}.mp4`,'video/mp4'); }catch(e){ console.warn(e); }
-      if(saved) cloudSaved++;
-      sh.video_url=forceHttps(saved||rawUrl); currentScenario.video_urls=collectVideoUrls(); renderVideo(sh); setVStat(sh.shot,saved?'完了 ✓ クラウド保存済み':'完了 ✓ 一時URL保存済み'); const ok=await autoSave(); setStatus('vidStatus',ok?'ok':'work',ok?'動画を保存しました。履歴から開けます。':'動画は端末に保存済みです。Supabase保存は失敗したため、履歴を書き出しでバックアップしてください。'); }
-    const allCloud=cloudSaved===shots.length;
-    setVideoJob(allCloud?'done':'err',allCloud?'動画完成・クラウド保存済み':'動画完成・クラウド保存未完了',100,allCloud?'動画ファイルをSupabase Storageへ保存しました。履歴から開けます。':'動画は表示できますが、一時URLの可能性があります。端末バックアップには残っています。');
-    setStatus('vidStatus',allCloud?'ok':'err',allCloud?'動画生成 完了・クラウド保存済み。':'動画生成は完了しましたが、クラウド保存が未完了です。履歴には一時URLとして残っています。');
-  }catch(e){ const msg=explainDreaminaError(e); setVideoJob('err','生成エラー',100,msg); setStatus('vidStatus','err','エラー: '+msg); } finally{ $('vidBtn').disabled=false; $('vidBtn').textContent='🎬 15秒動画を生成'; if(tb) tb.disabled=false; } }
-async function generateDreaminaVideo(sh){ const token=localStorage.getItem('useapi_token'), email=localStorage.getItem('dreamina_email');
-  const region=localStorage.getItem('dreamina_region')||'CA', model=localStorage.getItem('dreamina_model')||'seedance-2.0-fast'; const account=`${region}:${email}`;
-  const style=currentStyle;
-  ensureShotStyle(sh,style);
-  let prompt, body;
-  if(style==='live'){
-    const photos=livePhotos(), p=photos[sh.character]; let liveRef=p&&p.assetRef;
-    if(p&&p.dataUrl&&!liveRef){ setVStat(sh.shot,`${sh.character}の実写写真をDreaminaへ…`); liveRef=await uploadAsset(p.dataUrl,token,account); setLivePhotoAssetRef(sh.character,liveRef); }
-    prompt=buildSeedance(sh,'live', liveRef?[sh.character]:[]);
-    body={account,model,duration:sh.duration,ratio:RATIO,prompt};
-    if(liveRef) body.omni_1_imageRef=liveRef;
+function init() {
+  renderCharacters();
+  bindEvents();
+  loadState();
+  if (state.selectedCharacterId && state.buddyName) {
+    showScreen("chat");
+    renderChat();
+  } else if (state.selectedCharacterId) {
+    showScreen("name");
   } else {
-    // アニメ版：実際に取得できた参照画像だけを omni に付け、プロンプトの @imageN もそれに一致させる
-    const refs=[];
-    const photos=charPhotos(), p=photos[sh.character]; let charRef=p&&p.assetRef;
-    if(p&&p.dataUrl&&!charRef){ setVStat(sh.shot,`${sh.character}の登録画像をDreaminaへ…`); try{ charRef=await uploadAsset(p.dataUrl,token,account); setCharPhotoAssetRef(sh.character,charRef); }catch(e){ console.warn('local char upload',e); } }
-    if(!charRef){ const char=characters.find(c=>c.name===sh.character);
-      if(char){ if(char.dreamina_asset_ref){ charRef=char.dreamina_asset_ref; } else if(char.image_url){ setVStat(sh.shot,`${sh.character}の参照画像をDreaminaへ…`); try{ charRef=await uploadAsset(char.image_url,token,account); await supabaseClient.from('characters').update({dreamina_asset_ref:charRef}).eq('id',char.id); char.dreamina_asset_ref=charRef; }catch(e){ console.warn('char upload',e); } } } }
-    if(charRef) refs.push({label:sh.character, ref:charRef});
-    let bgRef=bgAssetCache[sh.bg_type]||null; if(!bgRef){ try{ setVStat(sh.shot,'背景をDreaminaへ…'); bgRef=await uploadAsset(BG_MAP[sh.bg_type]||BG_MAP.clean,token,account); bgAssetCache[sh.bg_type]=bgRef; }catch(e){ console.warn('bg upload',e); } }
-    if(bgRef) refs.push({label:'背景シーン', ref:bgRef});
-    prompt=buildSeedance(sh,'anime', refs.map(r=>r.label));
-    body={account,model,duration:sh.duration,ratio:RATIO,prompt};
-    refs.forEach((r,i)=>{ body[`omni_${i+1}_imageRef`]=r.ref; });
+    showScreen("select");
   }
-  setVStat(sh.shot,'動画リクエスト送信…'); setVideoJob('work','Dreaminaへ送信中',10,'動画生成リクエストを送っています。');
-  const createRes=await fetch('https://api.useapi.net/v1/dreamina/videos',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!createRes.ok) throw new Error('Dreamina create: '+(await createRes.text())); const cd=await createRes.json(); const jobid=cd.jobid; if(!jobid) throw new Error('jobidが返ってきません: '+JSON.stringify(cd).slice(0,200));
-  setVideoJob('work','Dreaminaで生成中',12,`受付完了。ジョブID: ${jobid}。ここからはDreamina側の順番待ちです。`);
-  const startedAt=Date.now(), maxChecks=120, waitMs=5000;
-  for(let i=0;i<maxChecks;i++){ await sleep(waitMs); const elapsed=Date.now()-startedAt, pct=Math.min(90,12+Math.round(((i+1)/maxChecks)*78)); const note=videoWaitNote(elapsed);
-    setVStat(sh.shot,`Dreaminaで生成中 ${formatElapsed(elapsed)} / 確認 ${i+1}/${maxChecks}（目安${pct}%）`);
-    setVideoJob('work','Dreaminaで生成中',pct,`${formatElapsed(elapsed)}待機中。${note}`);
-    $('vidBtn').textContent=`生成中… ${pct}%`;
-    try{ const r=await fetch(`https://api.useapi.net/v1/dreamina/videos/${jobid}`,{headers:{'Authorization':'Bearer '+token}}); if(!r.ok) continue; const d=await r.json(); const st=String(d.status||d.state||d.jobStatus||'').toLowerCase();
-      if(['completed','complete','succeeded','success','done','finished'].includes(st)){ const o=d.response||d.result||d; const url=o?.videoUrl||o?.video_url||o?.video?.url||o?.url||o?.videos?.[0]?.url||o?.videos?.[0]?.videoUrl||o?.output?.[0]?.url||o?.output_url||(Array.isArray(o)&&o[0]?.url); if(url) return url; throw new Error('動画URL取得失敗（Console確認）'); }
-      if(['failed','fail','error','canceled','cancelled'].includes(st)) throw new Error('生成失敗: '+(d.error||d.message||JSON.stringify(d).slice(0,200)));
-    }catch(e){ console.warn('poll',e); } }
-  throw new Error('タイムアウト（10分）'); }
-async function uploadAsset(imageUrl,token,account){ const imgRes=await fetch(imageUrl); if(!imgRes.ok) throw new Error('画像取得失敗: '+imageUrl); const blob=await imgRes.blob(); let ct=blob.type||'image/png';
-  if(ct==='application/octet-stream'||!ct.startsWith('image/')){ ct=imageUrl.endsWith('.webp')?'image/webp':(imageUrl.endsWith('.jpg')||imageUrl.endsWith('.jpeg'))?'image/jpeg':'image/png'; }
-  const r=await fetch(`https://api.useapi.net/v1/dreamina/assets/${encodeURIComponent(account)}`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':ct},body:blob}); if(!r.ok) throw new Error('asset upload: '+(await r.text())); const d=await r.json(); if(!d.assetRef) throw new Error('assetRef取得失敗'); return d.assetRef; }
-async function saveMediaToCloud(url,bucket,filename,contentType){ if(!supabaseClient) throw new Error('Supabase未接続のためクラウド保存できません'); try{ const {data,error}=await supabaseClient.functions.invoke('save-media',{body:{url,bucket,filename,contentType}}); if(error) throw error; if(data&&data.error) throw new Error(data.error); if(data&&data.publicUrl) return data.publicUrl; throw new Error('publicUrlなし'); }
-  catch(eFn){ let f=url.startsWith('http://')?url.replace('http://','https://'):url; const res=await fetch(f); if(!res.ok) throw new Error('取得失敗 HTTP '+res.status); const blob=await res.blob(); const up=await supabaseClient.storage.from(bucket).upload(filename,blob,{contentType,upsert:true}); if(up.error) throw up.error; return supabaseClient.storage.from(bucket).getPublicUrl(filename).data.publicUrl; } }
-function forceHttps(u){ return u? u.replace(/^http:\/\//,'https://'):u; }
-function formatElapsed(ms){ const s=Math.max(0,Math.floor(ms/1000)); return `${Math.floor(s/60)}分${String(s%60).padStart(2,'0')}秒`; }
-function videoWaitNote(ms){ if(ms<120000) return '通常はこのまま待って大丈夫です。'; if(ms<300000) return '少し混んでいます。15秒動画や実写参照ありの場合は時間が伸びます。'; if(ms<480000) return 'Dreamina側が混雑中です。画面は閉じずに待ってください。'; return 'かなり混雑しています。10分で戻らなければ、短めの内容か別モデルで再生成してください。'; }
-function videoHtml(url){ return `<video controls src="${escAttr(url)}"></video><div class="hint mono">${esc(url)}</div>`; }
-function renderVideo(sh){ const el=$('vid-'+sh.shot); if(el&&sh.video_url) el.innerHTML=videoHtml(sh.video_url); }
-function videoCount(s){ return s&&s.shots?s.shots.filter(sh=>!!sh.video_url).length:0; }
-function restoreScenarioVideos(s,urls){ if(!s||!s.shots) return s; const saved=urls||s.video_urls||{}; s.shots.forEach(sh=>{ const key=String(sh.shot); if(!sh.video_url&&(saved[sh.shot]||saved[key])) sh.video_url=saved[sh.shot]||saved[key]; }); s.video_urls=collectVideoUrlsFrom(s); return s; }
-function collectVideoUrlsFrom(s){ const m={}; if(s&&s.shots) s.shots.forEach(sh=>{ if(sh.video_url) m[sh.shot]=sh.video_url; }); return m; }
-function setVideoJob(kind,title,pct,detail){ const box=$('videoJob'); if(!box) return; box.className='job '+(kind==='done'?'done':kind==='err'?'err':''); box.classList.remove('hide'); $('videoJobTitle').textContent=title; $('videoJobStep').textContent=Math.round(pct)+'%'; $('videoJobFill').style.width=Math.max(0,Math.min(100,pct))+'%'; $('videoJobDetail').textContent=detail||''; }
-function explainDreaminaError(e){ const raw=String(e&&e.message?e.message:e);
-  if((raw.includes('1006')&&raw.toLowerCase().includes('credits'))||raw.includes('Not enough credits left')||raw.includes('no relevant benefits')) return 'Dreamina側のクレジット不足、またはこのアカウントでSeedanceを使う権利がありません（ret 1006）。Dreamina/CapCut側でクレジット・プラン・Seedance 2.0 Fastの利用権限を確認してください。急ぐ場合は、APIキー設定でモデルをSeedance 2.0 FastからSeedance 2.0へ変更して再試行してください。';
-  if(raw.includes('Submit failed')&&raw.includes('1002')) return 'Dreamina側で作成開始前に拒否されました（ret 1002）。Dreamina公式サイトで同じアカウントにログインし、Seedance 2.0 Fastで短い動画を1回作成して利用規約/初回確認を完了してください。まだ失敗する場合は、APIキー設定のリージョンをUS/CAでアカウント作成時と同じ地域に合わせて、Dreaminaモデルがそのアカウントで実行できるか確認してください。';
-  if(raw.includes('596')) return 'Dreaminaのログインセッションが切れている可能性があります。UseAPI側でDreaminaアカウントを再追加してください。';
-  if(raw.includes('401')||raw.includes('Unauthorized')) return 'UseAPIトークンが違うか期限切れです。KINJOLANDのキー復元、またはAPIキー設定を確認してください。';
-  if(raw.includes('asset upload')) return '参照画像のアップロードに失敗しました。画像を別のJPG/PNGに差し替えてください。';
-  return raw; }
-
-/* ===== copy / history ===== */
-function copyAllPrompts(){ if(!currentScenario) return; const st=currentScenario.style||currentStyle; const txt=currentScenario.shots.map(sh=>`#${sh.shot} [${sh.character} / bg:${sh.bg_type} / ${sh.duration}s]\n`+buildSeedance(sh,st)).join('\n\n'); copy(txt,'全プロンプトをコピーしました'); }
-function copyCapcutGuide(){ if(!currentScenario) return; const s=currentScenario;
-  let t=`【${s.title}】 ${(s.style==='live'?'実写版':'アニメ版')} / ${s.category} / ${s.theme}\n`;
-  t+=`CapCutで上から順に：クリップを並べ → 🎙ナレーションを声で乗せ → 字幕(テロップ)を入れる\n\n`;
-  s.shots.forEach(sh=>{ t+=`■ クリップ#${sh.shot}（${sh.duration}秒 / ${sh.character}）\n  字幕: ${sh.onscreen_text||''}\n  🎙ナレーション: ${sh.voiceover||''}\n\n`; });
-  t+=`― チェックリスト（最後に表示 or 概要欄）―\n`+(s.checklist||[]).map(c=>'☐ '+c).join('\n')+`\n\n締め: ${s.kimari_serifu||'これがKINJOクオリティ！'}`;
-  copy(t,'CapCut台本をコピーしました'); }
-function copy(t,msg){ navigator.clipboard.writeText(t).then(()=>setStatus('genStatus','ok',msg)); }
-async function loadHistory(){ const out=$('histOut'); if(!supabaseClient) return loadLocalHistory();
-  try{ const {data,error}=await supabaseClient.from(STAFF_TABLE).select('*').order('created_at',{ascending:false}).limit(50); if(error) throw error; if(!data||!data.length){ loadLocalHistory(); return; } histCache=data;
-    historySource='supabase'; updateHistorySourceButtons(); renderHistoryView();
-  }catch(e){ out.innerHTML='<div class="muted">読込エラー。端末バックアップを表示します。</div>'; loadLocalHistory(); } }
-function refreshLocalCache(){ try{ localCache=JSON.parse(localStorage.getItem('kinjo_staff_local')||'[]'); }catch(e){ localCache=[]; } }
-function loadLocalHistory(){ refreshLocalCache(); const out=$('histOut'); historySource='local'; updateHistorySourceButtons(); if(!localCache.length){ out.innerHTML='<div class="muted">端末バックアップはまだありません。</div>'; return; }
-  renderHistoryView(); }
-function exportLocalHistory(){ const data=localStorage.getItem('kinjo_staff_local')||'[]'; const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='kinjo-staff-history-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(a.href); }
-function openHist(i){ const r=histCache[i]; if(!r) return; currentScenario=restoreScenarioVideos(r.scenario,r.video_urls); currentRecordId=r.id||null; currentLocalId=null; renderScenario(currentScenario); setStatus('histStatus','ok',`履歴を開きました。動画 ${videoCount(currentScenario)}本を復元しました。`); $('scCard').scrollIntoView({behavior:'smooth',block:'start'}); }
-function openHistLocal(i){ const r=localCache[i]; if(!r) return; currentScenario=restoreScenarioVideos(r.scenario,r.video_urls); currentRecordId=null; currentLocalId=r.local_id||null; renderScenario(currentScenario); setStatus('histStatus','ok',`端末バックアップを開きました。動画 ${videoCount(currentScenario)}本を復元しました。`); $('scCard').scrollIntoView({behavior:'smooth',block:'start'}); }
-function historyVideoCount(rec){ const urls=rec&&rec.video_urls?Object.keys(rec.video_urls).length:0; const shots=rec&&rec.scenario&&rec.scenario.shots?rec.scenario.shots.filter(sh=>!!sh.video_url).length:0; return Math.max(urls,shots); }
-function setHistorySource(src){ historySource=src; updateHistorySourceButtons(); renderHistoryView(); }
-function updateHistorySourceButtons(){ const s=$('histSourceSupabase'), l=$('histSourceLocal'); if(s) s.classList.toggle('on',historySource==='supabase'); if(l) l.classList.toggle('on',historySource==='local'); }
-function renderHistoryView(){ const out=$('histOut'); if(!out) return; const src=historySource==='local'?'local':'supabase', list=src==='local'?localCache:histCache, q=($('histSearch')&&$('histSearch').value||'').trim().toLowerCase(), videoOnly=!!($('histVideoOnly')&&$('histVideoOnly').checked);
-  if(!list.length){ out.innerHTML=src==='local'?'<div class="muted">端末バックアップはまだありません。</div>':'<div class="muted">Supabase履歴はまだありません。</div>'; return; }
-  const rows=list.map((rec,i)=>({rec,i})).filter(x=>(!videoOnly||historyVideoCount(x.rec)>0)&&historyMatches(x.rec,q));
-  const label=src==='local'?'端末バックアップ':'Supabase保存';
-  out.innerHTML=`<div class="hint">${label} ${list.length}件中 ${rows.length}件を表示中。ダウンロードしなくてもここで検索・動画確認できます。</div>`+(rows.length?rows.map(x=>historyCard(x.rec,x.i,src)).join(''):'<div class="muted">条件に合う履歴がありません。</div>');
 }
-function historyMatches(rec,q){ if(!q) return true; const s=rec&&rec.scenario||{}; const parts=[rec.title,rec.theme,rec.category,rec.status,s.title,s.theme,s.category,s.hook,s.kimari_serifu,s.style,historyVideoCount(rec)?'動画 video':''];
-  if(s.steps) s.steps.forEach(st=>parts.push(st.action,st.why,st.narration));
-  if(s.checklist) s.checklist.forEach(x=>parts.push(x));
-  if(s.shots) s.shots.forEach(sh=>parts.push(sh.character,sh.bg_type,sh.scene,sh.voiceover,sh.onscreen_text,sh.video_url));
-  return parts.join(' ').toLowerCase().includes(q);
-}
-function historyCard(rec,i,kind){ const n=historyVideoCount(rec), saved=kind==='supabase', stl=rec.scenario&&rec.scenario.style==='live'?'🎥':'🎨';
-  const ts=saved?rec.created_at:rec.ts, id=saved?`id:${rec.id}`:'端末保存', openFn=saved?'openHist':'openHistLocal', pill=saved?'saved':'local';
-  return `<div class="hist-item">
-    <div class="ht">${stl} ${esc(rec.title||rec.theme)}<span class="pill ${pill}">${esc(rec.category||'')}</span>${n?`<span class="pill ${pill}">動画${n}本</span>`:''}</div>
-    <div class="hm">${new Date(ts).toLocaleString()} ／ 動画 ${n}本 ／ ${id}</div>
-    <div class="hist-actions"><button class="hist-open" onclick="${openFn}(${i})">シナリオを開く</button></div>
-    ${historyVideosHtml(rec)}
-  </div>`; }
-function historyVideoUrls(rec){ const out=[]; const seen=new Set(); const add=u=>{ if(!u) return; const v=forceHttps(String(u)); if(!seen.has(v)){ seen.add(v); out.push(v); } };
-  const urls=rec&&rec.video_urls?rec.video_urls:{}; Object.keys(urls).sort((a,b)=>Number(a)-Number(b)).forEach(k=>add(urls[k]));
-  if(rec&&rec.scenario&&rec.scenario.shots) rec.scenario.shots.forEach(sh=>add(sh.video_url));
-  return out; }
-function historyVideosHtml(rec){ const urls=historyVideoUrls(rec); if(!urls.length) return '';
-  return `<details class="hist-video-box"><summary>動画を見る</summary><div class="hist-videos">${urls.map((u,i)=>`<div><video controls preload="metadata" src="${escAttr(u)}"></video><div class="vurl">#${i+1} ${esc(u)}</div></div>`).join('')}</div></details>`; }
 
-/* ===== utils ===== */
-function setStatus(id,cls,msg){ const e=$(id); e.className='status show '+cls; e.textContent=msg; }
-function setVStat(shot,msg){ const e=$('vstat-'+shot); if(e) e.textContent=msg; }
-function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function escAttr(s){ return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function bindEvents() {
+  $("toNameBtn").addEventListener("click", () => showScreen("name"));
+  $("backToSelectBtn").addEventListener("click", () => showScreen("select"));
+  $("restoreBtn").addEventListener("click", restorePreviousBuddy);
+  $("nameForm").addEventListener("submit", onNameSubmit);
+  $("chatForm").addEventListener("submit", onChatSubmit);
+  $("chatInput").addEventListener("keydown", onChatKeydown);
+  $("renameBtn").addEventListener("click", () => showScreen("name"));
+  $("resetBtn").addEventListener("click", resetAll);
+  $("clearChatBtn").addEventListener("click", clearChat);
+}
+
+function renderCharacters() {
+  const grid = $("characterGrid");
+  grid.innerHTML = "";
+  CHARACTERS.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "character-card";
+    button.dataset.characterId = item.id;
+    button.style.setProperty("--avatar-a", item.colors[0]);
+    button.style.setProperty("--avatar-b", item.colors[1]);
+    button.innerHTML = `
+      <div class="avatar" aria-hidden="true">${item.icon}</div>
+      <h3>${escapeHtml(item.character)}</h3>
+      <p>${escapeHtml(item.summary)}</p>
+      <span class="tagline">${escapeHtml(item.tagline)}</span>
+    `;
+    button.addEventListener("click", () => selectCharacter(item.id));
+    grid.appendChild(button);
+  });
+}
+
+function selectCharacter(id) {
+  state.selectedCharacterId = id;
+  updateCharacterSelection();
+  saveState();
+}
+
+function updateCharacterSelection() {
+  document.querySelectorAll(".character-card").forEach((card) => {
+    card.classList.toggle("selected", card.dataset.characterId === state.selectedCharacterId);
+  });
+  $("toNameBtn").disabled = !state.selectedCharacterId;
+  renderNamePreview();
+}
+
+function renderNamePreview() {
+  const character = getSelectedCharacter();
+  const preview = $("namePreview");
+  if (!character) {
+    preview.innerHTML = "";
+    return;
+  }
+  preview.innerHTML = `
+    <div class="avatar" style="--avatar-a:${character.colors[0]};--avatar-b:${character.colors[1]}">${character.icon}</div>
+    <h3>${escapeHtml(character.character)}</h3>
+    <p>${escapeHtml(character.tagline)}</p>
+  `;
+  $("buddyName").value = state.buddyName || defaultNameFor(character);
+}
+
+function onNameSubmit(event) {
+  event.preventDefault();
+  const character = getSelectedCharacter();
+  const name = $("buddyName").value.trim();
+  if (!character || !name) return;
+  state.buddyName = name;
+  if (!state.messages.length) {
+    state.messages = [{
+      role: "assistant",
+      content: `${name}だよ。${character.character}として、今日からあなたの相棒になるね。まずは、今ちょっと相談したいことを話してみて。`
+    }];
+  }
+  saveState();
+  showScreen("chat");
+  renderChat();
+}
+
+async function onChatSubmit(event) {
+  event.preventDefault();
+  const input = $("chatInput");
+  const text = input.value.trim();
+  if (!text) return;
+
+  const character = getSelectedCharacter();
+  if (!character || !state.buddyName) {
+    showScreen("select");
+    return;
+  }
+
+  addMessage("user", text);
+  input.value = "";
+  setSending(true);
+
+  try {
+    const response = await fetch("/.netlify/functions/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        characterId: character.id,
+        name: state.buddyName,
+        messages: state.messages.filter((message) => message.role === "user" || message.role === "assistant")
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    addMessage("assistant", data.reply || "うん、聞いているよ。もう少し教えて。");
+    $("chatStatus").textContent = "保存しました";
+  } catch (error) {
+    addMessage("assistant", `ごめんね、今はClaudeにつながらなかったみたい。\n\n${error.message || error}`);
+    $("chatStatus").innerHTML = `<span class="error">送信エラー</span>`;
+  } finally {
+    setSending(false);
+  }
+}
+
+function onChatKeydown(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    $("chatForm").requestSubmit();
+  }
+}
+
+function addMessage(role, content) {
+  state.messages.push({ role, content });
+  state.messages = state.messages.slice(-40);
+  saveState();
+  renderMessages();
+}
+
+function renderChat() {
+  const character = getSelectedCharacter();
+  if (!character) return;
+  $("buddyAvatar").innerHTML = `<div class="avatar" style="--avatar-a:${character.colors[0]};--avatar-b:${character.colors[1]}">${character.icon}</div>`;
+  $("buddyDisplayName").textContent = state.buddyName;
+  $("buddyCharacterName").textContent = `${character.character} / ${character.tagline}`;
+  $("chatTitle").textContent = `${state.buddyName}と話す`;
+  renderMessages();
+}
+
+function renderMessages() {
+  const character = getSelectedCharacter();
+  const list = $("messages");
+  list.innerHTML = "";
+  state.messages.forEach((message) => {
+    const row = document.createElement("div");
+    row.className = `message ${message.role === "user" ? "user" : "assistant"}`;
+    const icon = message.role === "user" ? "あなた" : (character ? character.icon : "相");
+    row.innerHTML = `
+      <div class="mini-avatar">${escapeHtml(icon)}</div>
+      <div class="bubble">${escapeHtml(message.content)}</div>
+    `;
+    list.appendChild(row);
+  });
+  list.scrollTop = list.scrollHeight;
+}
+
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active"));
+  document.querySelectorAll(".step-tab").forEach((tab) => tab.classList.remove("active"));
+  $(`${name}Screen`).classList.add("active");
+  document.querySelector(`[data-tab="${name}"]`).classList.add("active");
+  const labels = { select: "STEP 1 / キャラ選択", name: "STEP 2 / 名前づけ", chat: "STEP 3 / チャット" };
+  $("stagePill").textContent = labels[name];
+  updateCharacterSelection();
+  if (name === "chat") renderChat();
+}
+
+function restorePreviousBuddy() {
+  const saved = readSavedState();
+  if (!saved || !saved.selectedCharacterId) {
+    alert("前回の相棒はまだありません。");
+    return;
+  }
+  state = saved;
+  showScreen(state.buddyName ? "chat" : "name");
+}
+
+function clearChat() {
+  if (!confirm("会話履歴をこの端末から消しますか？")) return;
+  const character = getSelectedCharacter();
+  state.messages = [{
+    role: "assistant",
+    content: `${state.buddyName}だよ。会話を新しくしたよ。今の気持ちから聞かせて。`
+  }];
+  if (!character) state.messages = [];
+  saveState();
+  renderChat();
+}
+
+function resetAll() {
+  if (!confirm("相棒の選択・名前・会話履歴をすべて消しますか？")) return;
+  state = { selectedCharacterId: null, buddyName: "", messages: [] };
+  saveState();
+  showScreen("select");
+}
+
+function setSending(isSending) {
+  $("sendBtn").disabled = isSending;
+  $("chatInput").disabled = isSending;
+  $("chatStatus").textContent = isSending ? "Claudeに相談中..." : "準備OK";
+}
+
+function loadState() {
+  state = readSavedState() || state;
+  updateCharacterSelection();
+}
+
+function readSavedState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (!saved || typeof saved !== "object") return null;
+    return {
+      selectedCharacterId: saved.selectedCharacterId || null,
+      buddyName: saved.buddyName || "",
+      messages: Array.isArray(saved.messages) ? saved.messages : []
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function getSelectedCharacter() {
+  return CHARACTERS.find((item) => item.id === state.selectedCharacterId);
+}
+
+function defaultNameFor(character) {
+  if (character.id === "sunglasses") return "グラちゃん";
+  if (character.id === "kinchan") return "金ちゃん";
+  return "たいよう";
+}
+
+function escapeHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 init();
 </script>
 </body>
