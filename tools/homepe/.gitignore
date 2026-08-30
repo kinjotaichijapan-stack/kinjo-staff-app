@@ -1,0 +1,14 @@
+# 認証情報（平文パスワードを含む）は絶対にコミットしない
+credentials.csv
+*.credentials.csv
+
+# 作業ディレクトリ直下の生成物（確定版は reports/ 配下に保存）
+/summary.csv
+/summary.md
+/remaining_detail.csv
+/received.csv
+
+# 生成された作業用中間ファイル
+__pycache__/
+*.pyc
+*.log
