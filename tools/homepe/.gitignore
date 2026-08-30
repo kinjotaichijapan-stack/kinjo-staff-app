@@ -11,3 +11,4 @@ credentials.csv
 # 生成された作業用中間ファイル
 __pycache__/
 *.pyc
+*.log
