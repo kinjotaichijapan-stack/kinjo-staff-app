@@ -82,10 +82,14 @@ def load_received(path: str) -> dict[str, dict]:
     return {norm(r["name"]): r for r in rows}
 
 
-def scrape_facility(fac: dict, start: date, days: int, price_days: int) -> dict:
+def scrape_facility(fac: dict, start: date, days: int, price_days: int,
+                    source: str = "zaiko") -> dict:
     s = hc.HomepeSession()
     s.login(fac["id"], fac["pw"])
-    wk = s.fetch_remaining_range(start, days)
+    if source == "reserveweek":
+        wk = s.fetch_remaining_range(start, days)
+    else:
+        wk = s.fetch_zaiko_inventory(start, days)
 
     price_end = start + timedelta(days=price_days - 1)
     stats = s.fetch_rsvgraph(start, price_end)
@@ -149,7 +153,7 @@ def build(args) -> None:
     for i, fac in enumerate(creds, 1):
         label = f"[{i}/{len(creds)}] {fac['id']} {fac['name']}"
         try:
-            m = scrape_facility(fac, start, args.days, args.price_days)
+            m = scrape_facility(fac, start, args.days, args.price_days, args.source)
         except hc.LoginError as e:
             print(f"{label}: ログイン失敗 ({e})", file=sys.stderr)
             summary_rows.append({**_empty_row(fac), "status": "ログイン失敗"})
@@ -234,9 +238,10 @@ def _write_summary_md(path: str, rows: list[dict], days: int, start: date) -> No
             "直近7日稼働%", "直近7日残室", f"満室日数/{days}", "予約単価(客単価)",
             "受付泊数", "受付単価", "料金目安"]
     lines = [
-        f"# Mr.KINJO 施設別 残室・単価サマリー",
+        f"# Mr.KINJO 施設別 在庫残・単価サマリー",
         "",
         f"- 基準日: {start:%Y-%m-%d}（今後{days}日を集計）",
+        f"- 残室＝在庫カレンダー（月次在庫同期）の残数（共通在庫）。予約数＝最大部屋提供数−残数",
         f"- 予約単価＝客単価（売上÷延人数、宿泊予定日ベース）／受付単価＝受付分売上÷泊数",
         f"- 料金目安: 直近7日稼働≥85%または{days}日稼働≥80%→上げ、"
         f"直近7日稼働≤35%かつ{days}日稼働≤45%→下げ、その他→維持",
@@ -270,6 +275,8 @@ def main() -> None:
                     help="受付分PDF由来CSV（無ければスキップ）")
     ap.add_argument("--start", default="", help="集計開始日 YYYY-MM-DD（既定=今日）")
     ap.add_argument("--days", type=int, default=30, help="残室集計日数")
+    ap.add_argument("--source", choices=["zaiko", "reserveweek"], default="zaiko",
+                    help="残室の取得元（既定=zaiko 在庫カレンダー）")
     ap.add_argument("--price-days", type=int, default=60, help="客単価集計日数")
     ap.add_argument("--sleep", type=float, default=1.0, help="施設間の待機秒")
     ap.add_argument("--limit", type=int, default=0, help="先頭N施設のみ")

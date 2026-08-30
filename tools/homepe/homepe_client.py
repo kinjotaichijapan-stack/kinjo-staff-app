@@ -242,6 +242,90 @@ class HomepeSession:
         combined.booked = {k: v for k, v in combined.booked.items() if k in keep}
         return combined
 
+    # ---- zaiko calendar (authoritative inventory) -----------------------
+    def _fetch_zaiko_page(self, rtypno: str, sitecd: str, cln_base: int) -> str:
+        fields = self._menu_fields()
+        fields.update(
+            {"rtypno": str(rtypno), "sitecd": str(sitecd), "cln_base": str(cln_base)}
+        )
+        html = self._post(BASE + "ydf_zaikocalendar.html", list(fields.items()))
+        self.last_html = html
+        return html
+
+    @staticmethod
+    def _zaiko_room_types(html: str) -> list[tuple[str, str]]:
+        m = re.search(r"name='rtypno'.*?</select>", html, re.S)
+        if not m:
+            return []
+        return re.findall(r"<option value='(\d+)'[^>]*>([^<]+)</option>", m.group(0))
+
+    @staticmethod
+    def _zaiko_max_rooms(html: str) -> int:
+        m = re.search(r"最大部屋提供数：(\d+)", html)
+        return int(m.group(1)) if m else 0
+
+    @staticmethod
+    def _zaiko_remaining(html: str, rtypno: str, sitecd: str) -> dict[str, int]:
+        # 残数(rtpz) は共通在庫のためどのサイトでも同値。sitecd=1 を基準に読む。
+        out: dict[str, int] = {}
+        for d, v in re.findall(
+            rf"id='rtpz\[{rtypno}\]\[{sitecd}\]\[([\d/]+)\]'>\s*(-?\d+)\s*<", html
+        ):
+            out[d] = int(v)
+        return out
+
+    def fetch_zaiko_inventory(self, start: date, days: int, base_today: date | None = None) -> ReserveWeek:
+        """在庫カレンダーから残室（＝共通在庫の残数）を取得して集計する。
+
+        残数は共通在庫のため sitecd=1（宿帳くん）を基準に部屋タイプ別へ読み、
+        総室数は各部屋タイプの「最大部屋提供数」で求める。
+        予約数 = 総室数 − 残数（日別・部屋タイプ合計）。
+        """
+        today = base_today or date.today()
+        end = start + timedelta(days=days)
+        # cln_base は当月=0 の月オフセット
+        def month_offset(d: date) -> int:
+            return (d.year - today.year) * 12 + (d.month - today.month)
+
+        months = sorted(
+            {month_offset(start + timedelta(days=i)) for i in range(days)}
+        )
+
+        result = ReserveWeek()
+        # 部屋タイプ一覧を最初の1回で取得
+        first = self._fetch_zaiko_page("1", "1", months[0])
+        room_types = self._zaiko_room_types(first)
+        if not room_types:
+            room_types = [("1", "")]
+
+        totals: dict[str, int] = {}
+        rem_by_type: dict[str, dict[str, int]] = {}
+        for rtypno, name in room_types:
+            rem_by_type.setdefault(rtypno, {})
+            for i, cln in enumerate(months):
+                html = first if (rtypno == "1" and i == 0 and cln == months[0]) else \
+                    self._fetch_zaiko_page(rtypno, "1", cln)
+                totals[rtypno] = max(totals.get(rtypno, 0), self._zaiko_max_rooms(html))
+                rem_by_type[rtypno].update(self._zaiko_remaining(html, rtypno, "1"))
+                time.sleep(0.2)
+            result.room_types.append(
+                RoomType(number=rtypno, name=name.strip(), total=totals.get(rtypno, 0))
+            )
+
+        keep = {
+            (start + timedelta(days=i)).strftime("%Y/%m/%d") for i in range(days)
+        }
+        for rtypno, days_map in rem_by_type.items():
+            cap = totals.get(rtypno, 0)
+            for iso, rem in days_map.items():
+                if iso not in keep:
+                    continue
+                result.by_type.setdefault(rtypno, {})[iso] = (rem, max(cap - rem, 0))
+                result.remaining[iso] = result.remaining.get(iso, 0) + rem
+                booked = max(cap - rem, 0)
+                result.booked[iso] = result.booked.get(iso, 0) + booked
+        return result
+
     # ---- rsvgraph (unit price by channel) -------------------------------
     def fetch_rsvgraph(self, start: date, end: date) -> list[ChannelStat]:
         html = self.goto(
