@@ -1,0 +1,7 @@
+# 認証情報（平文パスワードを含む）は絶対にコミットしない
+credentials.csv
+*.credentials.csv
+
+# 生成された作業用中間ファイル
+__pycache__/
+*.pyc
