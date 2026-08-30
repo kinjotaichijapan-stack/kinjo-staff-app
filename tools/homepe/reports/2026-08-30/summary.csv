@@ -1,14 +1,14 @@
 ﻿no,id,施設名,エリア,ランク,総室数,稼働率30日%,残室30日(室泊),直近7日稼働%,直近7日残室,満室日数/30,予約単価(客単価),受付泊数,受付売上,受付単価,料金目安,status
 1,eminencemakishi,Mr.KINJO Eminence inn Makishi,那覇,1,78,56.0,1030,83.5,90,1,5083,155,940836,6070,維持→,OK
 2,violette,Mr.KINJO in VIOLETTE 空港前,那覇,1,19,46.8,303,69.9,40,1,4928,17,104890,6170,維持→,OK
-3,premiumterrace,Mr.KINJO in PREMIUM TERRACE CHATAN,中部,1,19,61.2,221,78.9,28,0,7733,46,422790,9191,維持→,OK
-4,dbuil,Mr.KINJO inn D-buil,那覇,1,30,49.0,459,65.2,73,0,4927,35,254496,7271,維持→,OK
+3,premiumterrace,Mr.KINJO in PREMIUM TERRACE CHATAN,中部,1,19,65.1,199,83.5,22,1,7721,46,422790,9191,維持→,OK
+4,dbuil,Mr.KINJO inn D-buil,那覇,1,30,49.0,459,65.2,73,0,4916,35,254496,7271,維持→,OK
 5,uchidomari,Mr.KINJO in UCHIDOMARI,中部,1,21,53.0,296,68.0,47,0,6255,57,483142,8476,維持→,OK
 6,mihara,Mr.KINJO in MIHARA,那覇,1,23,55.1,310,73.3,43,0,6594,27,163350,6050,維持→,OK
 7,ishikawa,Mr.KINJO in 石川インター,中部,1,27,34.6,530,63.5,69,0,8446,23,215109,9353,維持→,OK
 8,alahastyle,Mr.KINJO in Alaha Style,中部,1,21,56.8,272,68.0,47,0,7095,28,326550,11662,維持→,OK
 9,tsubogawa,Mr.KINJO in Shanti Van 壺川駅,那覇,1,31,61.6,357,80.6,42,1,6491,50,319267,6385,維持→,OK
-10,nishizaki,Mr.KINJO in NISHIZAKI,南部,1,44,43.6,744,70.8,90,0,5884,57,445573,7817,維持→,OK
+10,nishizaki,Mr.KINJO in NISHIZAKI,南部,1,44,43.6,744,70.8,90,0,5874,57,445573,7817,維持→,OK
 11,asahibashi,Mr.KINJO in 旭橋駅前,那覇,1,28,70.6,247,76.5,46,0,6767,92,814901,8858,維持→,OK
 12,nishihara,Mr.KINJO in 西原インター,中部,1,24,47.2,380,70.2,50,1,5987,31,226877,7319,維持→,OK
 13,minamiuebaru,Mr.KINJO in MINAMIUEBARU,中部,1,24,43.3,408,64.9,59,0,6516,39,249692,6402,維持→,OK
@@ -18,22 +18,22 @@
 17,uruma,Mr.KINJO in URUMA,中部,1,28,45.8,455,62.8,73,0,8645,25,279840,11194,維持→,OK
 18,goldencats,Mr.KINJO in GOLDEN CATS,石垣,1,42,62.1,477,60.5,116,0,7562,85,941741,11079,維持→,OK
 19,miyakoisland,Mr.KINJO MIYAKO ISLAND,宮古,1,29,75.4,214,80.3,40,2,7797,52,438638,8435,維持→,OK
-20,kodomobyouin,Mr.KINJO in こども病院前,南部,1,36,43.9,606,50.0,126,0,5897,79,546846,6922,維持→,OK
+20,kodomobyouin,Mr.KINJO in こども病院前,南部,1,36,43.8,607,50.0,126,0,5897,79,546846,6922,維持→,OK
 21,sunsishigaki,Mr.KINJO Suns ISHIGAKI,石垣,1,21,59.7,254,70.7,43,0,8881,10,94391,9439,維持→,OK
-22,naha,Mr.KINJO in NAHA,那覇,2,36,47.8,564,77.8,56,0,5401,10,63583,6358,維持→,OK
+22,naha,Mr.KINJO in NAHA,那覇,2,36,47.6,566,77.0,58,0,5397,10,63583,6358,維持→,OK
 23,nicas,Mr.KINJO in Nica’s牧志駅 I,那覇,1,36,62.2,408,77.0,58,0,5503,39,340662,8735,維持→,OK
-24,kitanakagusuku,Mr.KINJO in Rycom 北中城,中部,1,21,60.5,249,85.0,22,1,5488,48,396188,8254,上げ↑,OK
+24,kitanakagusuku,Mr.KINJO in Rycom 北中城,中部,1,21,63.0,233,88.4,17,3,5488,48,396188,8254,上げ↑,OK
 25,kumenaha,Mr.KINJO LINK in Kume NAHA,那覇,2,20,50.5,297,74.3,36,0,5323,16,93531,5846,維持→,OK
-26,miki24,Mr.KINJO Miki24 in 牧志駅前,那覇,1,22,60.9,258,77.9,34,0,6121,27,210617,7801,維持→,OK
-27,manzabeach,Mr.KINJO 万座ビーチ前,北部,1,30,65.8,308,72.4,58,0,7158,33,278989,8454,維持→,OK
-28,painagama,Mr.KINJO 宮古島 パイナガマ リゾート,宮古,1,42,62.3,475,67.3,96,0,7030,82,816321,9955,維持→,OK
+26,miki24,Mr.KINJO Miki24 in 牧志駅前,那覇,1,22,65.5,228,82.5,27,1,6119,27,210617,7801,維持→,OK
+27,manzabeach,Mr.KINJO 万座ビーチ前,北部,1,30,65.7,309,72.4,58,0,7158,33,278989,8454,維持→,OK
+28,painagama,Mr.KINJO 宮古島 パイナガマ リゾート,宮古,1,42,62.3,475,67.3,96,0,7025,82,816321,9955,維持→,OK
 29,maehara,Mr.KINJO in MAEHARA,中部,1,24,43.8,405,67.3,55,0,5717,39,218718,5608,維持→,OK
 30,enishigaki,Mr.KINJO En 石垣,石垣,1,38,35.2,739,28.9,189,0,7231,69,631835,9157,下げ↓,OK
-31,grandcats,Mr.KINJO GRAND CATS,石垣,1,50,58.3,626,57.1,150,0,7779,58,621262,10711,維持→,OK
+31,grandcats,Mr.KINJO GRAND CATS,石垣,1,50,58.3,626,57.1,150,0,7769,58,621262,10711,維持→,OK
 32,grandbluechatan,Mr.KINJO in GRAND BLUE CHATAN,中部,1,48,39.9,866,56.2,147,0,7424,59,576140,9765,維持→,OK
 33,kugai,Mr.KINJO LINK in Kugai 宮古島,宮古,1,32,44.2,536,62.9,83,0,5408,42,252336,6008,維持→,OK
 34,miegusuku,Mr.KINJO in Miegusuku,那覇,1,32,42.5,552,61.6,86,0,4658,60,334522,5575,維持→,OK
-35,haibisunishi,Mr.KINJO in HAIBISU 西町,那覇,1,35,42.4,605,75.9,59,0,4703,53,435506,8217,維持→,OK
+35,haibisunishi,Mr.KINJO in HAIBISU 西町,那覇,1,35,42.6,603,75.9,59,0,4681,53,435506,8217,維持→,OK
 36,miyakojima,Mr.KINJO in MIYAKOJIMA,宮古,1,22,68.9,205,70.8,45,1,7231,60,441026,7350,維持→,OK
 37,shimozatominami,Mr.KINJO inn 下里南,宮古,1,32,35.8,616,46.0,121,0,6998,17,129361,7609,維持→,OK
 38,happiness2,Mr.KINJO Happiness Resort II,宮古,1,25,35.5,484,36.6,111,0,5181,27,178272,6603,維持→,OK
